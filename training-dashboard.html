@@ -197,39 +197,23 @@ function parseCsvLine(line) {
 // Но Вес/Повторения/Тоннаж могут "распасться" на пары полей из-за формата "40,00"
 function normalizeRow(cells) {
   cells = cells.map(c => c.trim());
-  const n = cells.length;
-  if (n < 5) return null;
+  if (cells.length < 4) return null;
 
-  // Если ровно 7 полей — всё как задумано, без разбиения
-  if (n === 7) {
-    return {
-      date: cells[0], time: cells[1], exercise: cells[2], muscleGroup: cells[3],
-      weight: parseFloat(cells[4].replace(',', '.')) || 0,
-      reps: parseInt(cells[5].replace(',', '.')) || 0,
-      tonnage: parseFloat(cells[6].replace(',', '.')) || 0,
-    };
-  }
-
-  // Общий случай: последние (n-4) полей — это Вес,Повторения,Тоннаж, каждое из которых
-  // могло разбиться на 2 (целая,дробная). Соберём их с конца.
   const date = cells[0];
-  const exercise = cells[1] !== undefined ? cells[1] : '';
-  // Если "Время" пусто, оно могло не попасть в CSV как отдельное поле — тогда сдвиг на 1
-  // Определяем эвристически: cells[1] похоже на дату/время (содержит ':') -> это Время
-  let idx = 1;
-  let time = '';
-  if (cells[1] && cells[1].includes(':')) { time = cells[1]; idx = 2; }
-  const ex = cells[idx]; idx++;
-  const mg = cells[idx]; idx++;
-  const rest = cells.slice(idx); // оставшиеся поля — Вес, Повторения, Тоннаж (каждое может быть из 1 или 2 токенов)
+  const time = cells[1] || '';
+  const exercise = cells[2] || '';
+  const muscleGroup = cells[3] || '';
+  const rest = cells.slice(4); // Вес, Повторения, Тоннаж — каждое может распасться на 2 токена
 
   function takeNumber(tokens, pos) {
-    // Берём токен; если следующий токен — чисто "00" или "0"-"99" (дробная часть), склеиваем
+    if (pos >= tokens.length) return { value: 0, next: pos };
     const t1 = tokens[pos];
+    if (t1 === '') return { value: 0, next: pos + 1 };
     if (pos + 1 < tokens.length && /^\d{1,2}$/.test(tokens[pos + 1])) {
-      return { value: parseFloat(t1 + '.' + tokens[pos + 1]), next: pos + 2 };
+      const intPart = t1.replace(/\s/g, '');
+      return { value: parseFloat(intPart + '.' + tokens[pos + 1]), next: pos + 2 };
     }
-    return { value: parseFloat((t1 || '0').replace(',', '.')), next: pos + 1 };
+    return { value: parseFloat(t1.replace(/\s/g, '').replace(',', '.')) || 0, next: pos + 1 };
   }
 
   let p = 0;
@@ -238,8 +222,9 @@ function normalizeRow(cells) {
   const t = takeNumber(rest, p); p = t.next;
 
   return {
-    date, time, exercise: ex, muscleGroup: mg,
-    weight: w.value || 0, reps: Math.round(r.value) || 0, tonnage: t.value || (w.value * r.value) || 0,
+    date, time, exercise, muscleGroup,
+    weight: w.value || 0, reps: Math.round(r.value) || 0,
+    tonnage: t.value || (w.value * r.value) || 0,
   };
 }
 
