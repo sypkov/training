@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренировочный дашборд — Сыпков А.В.</title>
+<link rel="apple-touch-icon" href="Shield.png">
+<style>
+  :root {
+    --bg: #131316;
+    --card: #1c1c20;
+    --card2: #202024;
+    --line: #2c2c31;
+    --text: #eceae6;
+    --text-dim: #8f8d8a;
+    --orange: #FF5A1F;
+    --orange-dim: #FF5A1F33;
+    --teal: #12D6B8;
+    --teal-dim: #12D6B833;
+    --plates: #F2C230;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .mono { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 60px; }
+
+  .hero {
+    padding: 40px 16px 32px; text-align: center;
+    background: radial-gradient(ellipse at top, #24201a 0%, var(--bg) 70%);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .hero-eyebrow { color: var(--orange); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .hero h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .hero p { color: var(--text-dim); font-size: 13px; }
+  .live-badge { display: inline-block; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 980px; margin: 24px auto 0; padding: 0 16px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 12px; text-align: center; }
+  .stat .num { font-size: 22px; font-weight: 800; font-family: ui-monospace, 'SF Mono', monospace; color: var(--orange); }
+  .stat .lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  @media (max-width: 560px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+
+  .section { margin: 36px 0; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .section-head h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .section-head .sub { font-size: 11px; color: var(--text-dim); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .card + .card { margin-top: 14px; }
+  .chart-box { position: relative; }
+
+  .mg-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .mg-row:last-child { border-bottom: none; }
+  .mg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .mg-name { flex: 1; font-size: 13px; }
+  .mg-val { font-family: ui-monospace, monospace; font-size: 13px; color: var(--text-dim); }
+  .mg-pct { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 700; width: 42px; text-align: right; }
+
+  details.raw { margin-top: 10px; }
+  details.raw summary { cursor: pointer; font-size: 12px; color: var(--teal); padding: 8px 0; }
+  table.raw-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  table.raw-table th { text-align: left; color: var(--text-dim); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); font-size: 11px; text-transform: uppercase; }
+  table.raw-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .of { overflow-x: auto; }
+
+  .foot { text-align: center; color: var(--text-dim); font-size: 11px; padding: 30px 0 10px; }
+  .badge-new { display:inline-block; background: var(--teal-dim); color: var(--teal); font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; margin-left:8px; }
+  .err-box { display:none; font-size:12px; color:#FF5A1F; margin-top:10px; text-align:center; }
+  .err-box a { color: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Тоннаж · Прогресс · Мышечные группы</div>
+  <h1>Тренировочный дашборд</h1>
+  <p>Сыпков Алексей Васильевич</p>
+  <div class="live-badge" id="liveBadge">· загрузка данных…</div>
+</div>
+
+<div class="stat-row" id="statRow">
+  <div class="stat"><div class="num" id="statTotal">—</div><div class="lbl">Общий тоннаж, кг</div></div>
+  <div class="stat"><div class="num" id="statSessions">—</div><div class="lbl">Тренировок</div></div>
+  <div class="stat"><div class="num" id="statAvg">—</div><div class="lbl">Среднее за сессию, кг</div></div>
+  <div class="stat"><div class="num" id="statMax">—</div><div class="lbl">Максимум за сессию, кг</div></div>
+</div>
+
+<div class="wrap">
+
+<div class="err-box" id="errBox">
+  Не удалось загрузить данные автоматически. Открыть таблицу напрямую:
+  <a href="https://docs.google.com/spreadsheets/d/1_km4eapRAIGb5g9w6CP4NibtiEOq3qN3lCujIly8f80/edit" target="_blank">Дневник тренировок</a>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Тоннаж по сессиям</h2>
+    <span class="sub">кг за тренировку, хронология</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:260px;"><canvas id="sessionChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Распределение по мышечным группам</h2>
+    <span class="sub" id="mgSub">суммарный тоннаж</span>
+  </div>
+  <div class="card" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+    <div class="chart-box" style="height:220px;flex:1;min-width:200px;"><canvas id="mgChart"></canvas></div>
+    <div style="flex:1;min-width:220px;">
+      <div id="mgList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Топ упражнений по тоннажу</h2>
+    <span class="sub">сумма за весь период</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:320px;"><canvas id="topExChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Динамика по ключевым упражнениям</h2>
+    <span class="sub">тоннаж за подход, по датам · клик по легенде — скрыть/показать</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:300px;"><canvas id="trendChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2 id="lastSessionTitle">Последняя тренировка <span class="badge-new">новая</span></h2>
+    <span class="sub" id="lastSessionSub">—</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:240px;"><canvas id="julyChart"></canvas></div>
+  </div>
+</div>
+
+<details class="raw">
+  <summary id="rawSummary">Показать сырые данные по всем упражнениям</summary>
+  <div class="of">
+    <table class="raw-table" id="rawTable">
+      <thead><tr><th>Дата</th><th>Упражнение</th><th>Группа</th><th>Вес</th><th>Повторы</th><th>Тоннаж, кг</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</details>
+
+<div class="foot">Тоннаж = вес × повторения, суммарно по всем подходам упражнения за сессию. Данные загружаются напрямую из Google Таблицы «Дневник тренировок».</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+Chart.defaults.color = '#8f8d8a';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.borderColor = '#2c2c31';
+
+const SHEET_ID = '1_km4eapRAIGb5g9w6CP4NibtiEOq3qN3lCujIly8f80';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%D0%9B%D0%B8%D1%81%D1%821`;
+
+const mgColors = { 'Трицепс':'#FF5A1F', 'Грудь':'#12D6B8', 'Ноги':'#F2C230', 'Бицепс':'#7C6CF0', 'Спина':'#F0508A', 'Плечи':'#4C9EF5', 'Плечи/спина':'#6b6a67' };
+function colorFor(mg, i) {
+  return mgColors[mg] || ['#FF5A1F','#12D6B8','#F2C230','#7C6CF0','#F0508A','#4C9EF5'][i % 6];
+}
+
+function parseCsvLine(line) {
+  const re = /("([^"]|"")*"|[^,]*)(,|$)/g;
+  const out = [];
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    if (m.index === re.lastIndex && m[0] === '') break;
+    let val = m[1];
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1).replace(/""/g, '"');
+    out.push(val);
+    if (m[3] === '') break;
+  }
+  return out;
+}
+
+// Разбор строки с защитой от разбиения чисел по запятой (десятичный разделитель)
+// Ожидаем 7 полей: Дата,Время,Упражнение,Мышечная_группа,Вес,Повторения,Тоннаж
+// Но Вес/Повторения/Тоннаж могут "распасться" на пары полей из-за формата "40,00"
+function normalizeRow(cells) {
+  cells = cells.map(c => c.trim());
+  const n = cells.length;
+  if (n < 5) return null;
+
+  // Если ровно 7 полей — всё как задумано, без разбиения
+  if (n === 7) {
+    return {
+      date: cells[0], time: cells[1], exercise: cells[2], muscleGroup: cells[3],
+      weight: parseFloat(cells[4].replace(',', '.')) || 0,
+      reps: parseInt(cells[5].replace(',', '.')) || 0,
+      tonnage: parseFloat(cells[6].replace(',', '.')) || 0,
+    };
+  }
+
+  // Общий случай: последние (n-4) полей — это Вес,Повторения,Тоннаж, каждое из которых
+  // могло разбиться на 2 (целая,дробная). Соберём их с конца.
+  const date = cells[0];
+  const exercise = cells[1] !== undefined ? cells[1] : '';
+  // Если "Время" пусто, оно могло не попасть в CSV как отдельное поле — тогда сдвиг на 1
+  // Определяем эвристически: cells[1] похоже на дату/время (содержит ':') -> это Время
+  let idx = 1;
+  let time = '';
+  if (cells[1] && cells[1].includes(':')) { time = cells[1]; idx = 2; }
+  const ex = cells[idx]; idx++;
+  const mg = cells[idx]; idx++;
+  const rest = cells.slice(idx); // оставшиеся поля — Вес, Повторения, Тоннаж (каждое может быть из 1 или 2 токенов)
+
+  function takeNumber(tokens, pos) {
+    // Берём токен; если следующий токен — чисто "00" или "0"-"99" (дробная часть), склеиваем
+    const t1 = tokens[pos];
+    if (pos + 1 < tokens.length && /^\d{1,2}$/.test(tokens[pos + 1])) {
+      return { value: parseFloat(t1 + '.' + tokens[pos + 1]), next: pos + 2 };
+    }
+    return { value: parseFloat((t1 || '0').replace(',', '.')), next: pos + 1 };
+  }
+
+  let p = 0;
+  const w = takeNumber(rest, p); p = w.next;
+  const r = takeNumber(rest, p); p = r.next;
+  const t = takeNumber(rest, p); p = t.next;
+
+  return {
+    date, time, exercise: ex, muscleGroup: mg,
+    weight: w.value || 0, reps: Math.round(r.value) || 0, tonnage: t.value || (w.value * r.value) || 0,
+  };
+}
+
+async function loadTrainingData() {
+  const liveBadge = document.getElementById('liveBadge');
+  const errBox = document.getElementById('errBox');
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const dataLines = lines.slice(1);
+    let rows = dataLines.map(l => normalizeRow(parseCsvLine(l))).filter(r => r && r.exercise);
+
+    if (rows.length === 0) throw new Error('Нет данных');
+
+    renderDashboard(rows);
+    liveBadge.textContent = `· обновлено сейчас, ${rows.length} записей`;
+    liveBadge.style.color = '#12D6B8';
+  } catch (err) {
+    console.error('Training data load error:', err);
+    liveBadge.textContent = '· не удалось загрузить';
+    liveBadge.style.color = '#FF5A1F';
+    errBox.style.display = 'block';
+  }
+}
+
+function parseRuDate(s) {
+  const [d, m, y] = s.split('.').map(Number);
+  return new Date(y, m - 1, d);
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+}
+
+function renderDashboard(rows) {
+  rows.forEach(r => r._d = parseRuDate(r.date));
+  rows.sort((a, b) => a._d - b._d);
+
+  // ===== СВОДКА =====
+  const sessionMap = new Map(); // dateStr -> {date, tonnage}
+  rows.forEach(r => {
+    const key = r.date;
+    if (!sessionMap.has(key)) sessionMap.set(key, { date: r.date, _d: r._d, tonnage: 0 });
+    sessionMap.get(key).tonnage += r.tonnage;
+  });
+  const sessions = Array.from(sessionMap.values()).sort((a, b) => a._d - b._d);
+  const totalTonnage = sessions.reduce((a, s) => a + s.tonnage, 0);
+  const avgTonnage = totalTonnage / sessions.length;
+  const maxSession = Math.max(...sessions.map(s => s.tonnage));
+
+  document.getElementById('statTotal').textContent = Math.round(totalTonnage).toLocaleString('ru-RU');
+  document.getElementById('statSessions').textContent = sessions.length;
+  document.getElementById('statAvg').textContent = Math.round(avgTonnage).toLocaleString('ru-RU');
+  document.getElementById('statMax').textContent = Math.round(maxSession).toLocaleString('ru-RU');
+  document.querySelector('.hero p').textContent =
+    `Сыпков Алексей Васильевич · ${fmtDate(sessions[0]._d)}.${sessions[0]._d.getFullYear().toString().slice(2)} – ${fmtDate(sessions[sessions.length-1]._d)}.${sessions[sessions.length-1]._d.getFullYear().toString().slice(2)}`;
+
+  // ===== ТОННАЖ ПО СЕССИЯМ =====
+  const sessionLabels = sessions.map(s => fmtDate(s._d));
+  const sessionTonnage = sessions.map(s => Math.round(s.tonnage));
+  const lastIdx = sessions.length - 1;
+
+  new Chart(document.getElementById('sessionChart'), {
+    type: 'bar',
+    data: {
+      labels: sessionLabels,
+      datasets: [{
+        label: 'Тоннаж (кг)',
+        data: sessionTonnage,
+        backgroundColor: sessions.map((s, i) => i === lastIdx ? '#12D6B8' : '#FF5A1F'),
+        borderRadius: 5,
+        maxBarThickness: 28,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString('ru-RU') + ' кг' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // ===== МЫШЕЧНЫЕ ГРУППЫ =====
+  const mgMap = new Map();
+  rows.forEach(r => mgMap.set(r.muscleGroup, (mgMap.get(r.muscleGroup) || 0) + r.tonnage));
+  const mgSorted = Array.from(mgMap.entries()).sort((a, b) => b[1] - a[1]);
+  const mgLabels = mgSorted.map(e => e[0]);
+  const mgValues = mgSorted.map(e => Math.round(e[1]));
+  const mgColorList = mgLabels.map((l, i) => colorFor(l, i));
+  const mgTotal = mgValues.reduce((a, b) => a + b, 0);
+
+  document.getElementById('mgSub').textContent = `суммарный тоннаж, ${fmtDate(sessions[0]._d)}–${fmtDate(sessions[lastIdx]._d)}`;
+
+  new Chart(document.getElementById('mgChart'), {
+    type: 'doughnut',
+    data: { labels: mgLabels, datasets: [{ data: mgValues, backgroundColor: mgColorList, borderColor: '#1c1c20', borderWidth: 3 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.raw.toLocaleString('ru-RU') + ' кг (' + (ctx.raw/mgTotal*100).toFixed(1) + '%)' } } }
+    }
+  });
+
+  const mgListEl = document.getElementById('mgList');
+  mgListEl.innerHTML = '';
+  mgLabels.forEach((label, i) => {
+    const pct = (mgValues[i]/mgTotal*100).toFixed(1);
+    mgListEl.innerHTML += `<div class="mg-row">
+      <span class="mg-dot" style="background:${mgColorList[i]}"></span>
+      <span class="mg-name">${label}</span>
+      <span class="mg-val mono">${mgValues[i].toLocaleString('ru-RU')} кг</span>
+      <span class="mg-pct mono">${pct}%</span>
+    </div>`;
+  });
+
+  // ===== ТОП УПРАЖНЕНИЙ =====
+  const exMap = new Map();
+  rows.forEach(r => exMap.set(r.exercise, (exMap.get(r.exercise) || 0) + r.tonnage));
+  const exSorted = Array.from(exMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  new Chart(document.getElementById('topExChart'), {
+    type: 'bar',
+    data: {
+      labels: exSorted.map(e => e[0]),
+      datasets: [{ data: exSorted.map(e => Math.round(e[1])), backgroundColor: '#FF5A1F', borderRadius: 5 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString('ru-RU') + ' кг' } } },
+      scales: {
+        x: { grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ===== ТРЕНДЫ ПО ТОП-6 УПРАЖНЕНИЙ (по частоте встречаемости) =====
+  const freqMap = new Map();
+  rows.forEach(r => freqMap.set(r.exercise, (freqMap.get(r.exercise) || 0) + 1));
+  const topByFreq = Array.from(freqMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6).map(e => e[0]);
+
+  const trendColors = ['#FF5A1F','#12D6B8','#F2C230','#7C6CF0','#F0508A','#4C9EF5'];
+  const allDates = sessions.map(s => s.date);
+  const trendDatasets = topByFreq.map((exName, i) => {
+    const perDate = new Map();
+    rows.filter(r => r.exercise === exName).forEach(r => {
+      perDate.set(r.date, (perDate.get(r.date) || 0) + r.tonnage);
+    });
+    return {
+      label: exName.length > 28 ? exName.slice(0,26) + '…' : exName,
+      data: allDates.map(d => perDate.has(d) ? Math.round(perDate.get(d)) : null),
+      borderColor: trendColors[i],
+      backgroundColor: trendColors[i],
+      spanGaps: true, tension: 0.3, pointRadius: 3, borderWidth: 2,
+    };
+  });
+
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: { labels: allDates.map(d => fmtDate(parseRuDate(d))), datasets: trendDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 10 } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // ===== ПОСЛЕДНЯЯ ТРЕНИРОВКА =====
+  const lastDate = sessions[lastIdx].date;
+  const lastRows = rows.filter(r => r.date === lastDate);
+  const lastExMap = new Map();
+  const lastExGroup = new Map();
+  lastRows.forEach(r => {
+    lastExMap.set(r.exercise, (lastExMap.get(r.exercise) || 0) + r.tonnage);
+    lastExGroup.set(r.exercise, r.muscleGroup);
+  });
+  const lastLabels = Array.from(lastExMap.keys());
+  const lastValues = lastLabels.map(l => Math.round(lastExMap.get(l)));
+  const lastColors = lastLabels.map(l => colorFor(lastExGroup.get(l), 0));
+
+  document.getElementById('lastSessionTitle').innerHTML = `Последняя тренировка (${fmtDate(sessions[lastIdx]._d)}) <span class="badge-new">новая</span>`;
+  const lastGroups = [...new Set(lastLabels.map(l => lastExGroup.get(l)))];
+  document.getElementById('lastSessionSub').textContent = lastGroups.join(' + ');
+
+  new Chart(document.getElementById('julyChart'), {
+    type: 'bar',
+    data: { labels: lastLabels, datasets: [{ data: lastValues, backgroundColor: lastColors, borderRadius: 5, maxBarThickness: 40 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString('ru-RU') + ' кг (' + lastExGroup.get(ctx.label) + ')' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { grid: { color: '#2c2c31' } }
+      }
+    }
+  });
+
+  // ===== СЫРЫЕ ДАННЫЕ =====
+  document.getElementById('rawSummary').textContent = `Показать сырые данные по всем упражнениям (${rows.length} записей)`;
+  const tbody = document.querySelector('#rawTable tbody');
+  tbody.innerHTML = '';
+  rows.slice().reverse().forEach(row => {
+    tbody.innerHTML += `<tr><td>${row.date}</td><td>${row.exercise}</td><td>${row.muscleGroup}</td><td class="mono">${row.weight || '—'}</td><td class="mono">${row.reps || '—'}</td><td class="mono">${Math.round(row.tonnage).toLocaleString('ru-RU')}</td></tr>`;
+  });
+}
+
+loadTrainingData();
+</script>
+
+</body>
+</html>
