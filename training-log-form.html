@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дневник тренировок</title>
+<link rel="apple-touch-icon" href="Shield.png">
+<style>
+  :root {
+    --bg: #131316; --card: #1c1c20; --line: #2c2c31; --text: #eceae6; --text-dim: #8f8d8a;
+    --orange: #FF5A1F; --teal: #12D6B8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 24px 18px 60px; }
+  .eyebrow { color: var(--orange); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+  h1 { font-size: 24px; font-weight: 800; margin-bottom: 20px; }
+  label { display: block; font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin: 16px 0 6px; }
+  select, input {
+    width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; font-size: 16px; color: var(--text); font-family: inherit;
+  }
+  select:focus, input:focus { outline: none; border-color: var(--orange); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > div { flex: 1; }
+  button {
+    width: 100%; margin-top: 26px; background: var(--orange); color: #fff; border: none;
+    border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  button:active { opacity: 0.85; }
+  button:disabled { background: #555; }
+  .msg { margin-top: 14px; font-size: 13px; text-align: center; padding: 10px; border-radius: 8px; display: none; }
+  .msg.ok { display: block; background: #12D6B822; color: var(--teal); }
+  .msg.err { display: block; background: #FF5A1F22; color: var(--orange); }
+  .settings { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .settings summary { cursor: pointer; font-size: 12px; color: var(--text-dim); }
+  .last-set { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Тоннаж · Прогресс</div>
+  <h1>Записать подход</h1>
+
+  <label>Дата</label>
+  <input type="date" id="date">
+
+  <label>Мышечная группа</label>
+  <select id="muscleGroup"></select>
+
+  <label>Упражнение</label>
+  <select id="exercise"></select>
+
+  <div class="row2">
+    <div>
+      <label>Вес, кг</label>
+      <input type="number" id="weight" inputmode="decimal" step="0.5" min="0" placeholder="напр. 40">
+    </div>
+    <div>
+      <label>Повторения</label>
+      <input type="number" id="reps" inputmode="numeric" step="1" min="1" placeholder="напр. 12">
+    </div>
+  </div>
+
+  <button id="submitBtn" onclick="submitSet()">Записать подход</button>
+  <div class="last-set" id="lastSet"></div>
+  <div class="msg" id="msg"></div>
+
+  <details class="settings">
+    <summary>Настройки подключения</summary>
+    <label>URL Apps Script (Web App)</label>
+    <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <button style="margin-top:10px;background:#2c2c31;" onclick="saveUrl()">Сохранить URL</button>
+  </details>
+</div>
+
+<script>
+const EXERCISES = {
+  "Грудь": ["Жим на грудь в рычажном тренажёре лёжа", "Жим на грудь в рычажном тренажёре сидя", "Бабочка", "Жим в рычажном тренажере (Хаммер) сидя", "Жим на грудь на наклонной скамье в тренажёре"],
+  "Спина": ["Тяга верхнего блока", "Тяга горизонтальная рычажная по одной руке", "Тяга upper блока", "Горизонтальная тяга с упором сидя"],
+  "Плечи": ["Жим от плеч сидя в рычажном тренажёре", "Тяга штанги к подбородку", "Отведение плеча в блочном тренажёре", "Подъёмы гантелей перед собой", "Жим в блочном тренажёре на плечи", "Махи гантелей через стороны сидя"],
+  "Плечи/спина": ["Отведение на спину в рычажном тренажёре"],
+  "Бицепс": ["Сгибание на бицепс сидя в блочном тренажёре", "Сгибание на бицепс на скамье", "Молоток в тренажёре", "Dependent curl"],
+  "Трицепс": ["Трицепс в тренажёре сидя", "Разгибание рук на верхнем блоке", "Жим на трицепс в рычажном тренажере (сидя)"],
+  "Ноги": ["Разгибание голени сидя в блочном тренажёре", "Жим ногами с фокусом на ягодицы", "Сгибание коленей в блочном тренажёре"],
+};
+
+const mgSelect = document.getElementById('muscleGroup');
+const exSelect = document.getElementById('exercise');
+
+Object.keys(EXERCISES).forEach(mg => {
+  const opt = document.createElement('option');
+  opt.value = mg; opt.textContent = mg;
+  mgSelect.appendChild(opt);
+});
+
+function refreshExercises() {
+  const mg = mgSelect.value;
+  exSelect.innerHTML = '';
+  EXERCISES[mg].forEach(ex => {
+    const opt = document.createElement('option');
+    opt.value = ex; opt.textContent = ex;
+    exSelect.appendChild(opt);
+  });
+}
+mgSelect.addEventListener('change', refreshExercises);
+refreshExercises();
+
+// Дата по умолчанию — сегодня
+document.getElementById('date').value = new Date().toISOString().slice(0,10);
+
+// URL скрипта — из localStorage
+const urlInput = document.getElementById('scriptUrl');
+urlInput.value = localStorage.getItem('training_script_url') || '';
+
+function saveUrl() {
+  localStorage.setItem('training_script_url', urlInput.value.trim());
+  showMsg('ok', 'URL сохранён');
+}
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  setTimeout(() => { el.className = 'msg'; }, 4000);
+}
+
+async function submitSet() {
+  const scriptUrl = localStorage.getItem('training_script_url');
+  if (!scriptUrl) {
+    showMsg('err', 'Сначала сохрани URL Apps Script в настройках ниже');
+    return;
+  }
+  const weight = document.getElementById('weight').value;
+  const reps = document.getElementById('reps').value;
+  if (!weight || !reps) {
+    showMsg('err', 'Заполни вес и повторения');
+    return;
+  }
+
+  const dateVal = document.getElementById('date').value; // YYYY-MM-DD
+  const [y,m,d] = dateVal.split('-');
+  const dateFormatted = `${d}.${m}.${y}`;
+
+  const payload = {
+    date: dateFormatted,
+    exercise: exSelect.value,
+    muscleGroup: mgSelect.value,
+    weight: weight,
+    reps: reps,
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Записываю...';
+
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // избегаем preflight CORS
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      showMsg('ok', `Записано: ${payload.exercise} — ${weight}×${reps} = ${json.tonnage} кг тоннажа`);
+      document.getElementById('lastSet').textContent = `Последний подход: ${payload.exercise}, ${weight} кг × ${reps}`;
+      document.getElementById('reps').value = '';
+    } else {
+      showMsg('err', 'Ошибка: ' + json.message);
+    }
+  } catch (err) {
+    showMsg('err', 'Не удалось отправить: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Записать подход';
+  }
+}
+</script>
+</body>
+</html>
