@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Медицинский дашборд — Сыпков А.В.</title>
+<link rel="apple-touch-icon" href="Shield.png">
+<link rel="icon" type="image/png" href="Shield.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3ee; color: #2c2c2a; font-size: 14px; }
+  .header { background: #534AB7; color: #fff; padding: 20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .header-text h1 { font-size: 20px; font-weight: 500; }
+  .header-text p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .header-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .section-title { font-size: 15px; font-weight: 500; color: #444441; margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #d3d1c7; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .card { background: #fff; border-radius: 10px; border: 0.5px solid #d3d1c7; padding: 12px 14px; }
+  .card-label { font-size: 11px; color: #888780; margin-bottom: 4px; line-height: 1.3; }
+  .card-value { font-size: 20px; font-weight: 500; }
+  .card-ref { font-size: 11px; color: #888780; margin-top: 2px; }
+  .ok { color: #1D9E75; }
+  .high { color: #D85A30; }
+  .low { color: #BA7517; }
+  .flag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+  .flag-high { background: #FAECE7; color: #993C1D; }
+  .flag-low { background: #FAEEDA; color: #633806; }
+  .flag-ok { background: #E1F5EE; color: #085041; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 0.5px solid #d3d1c7; }
+  th { background: #f1efe8; font-size: 11px; font-weight: 500; color: #444441; text-align: left; padding: 8px 12px; }
+  td { padding: 8px 12px; border-top: 0.5px solid #e8e6df; font-size: 13px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px; }
+  .badge-ok { background: #E1F5EE; color: #085041; }
+  .badge-high { background: #FAECE7; color: #993C1D; }
+  .badge-low { background: #FAEEDA; color: #633806; }
+  .badge-info { background: #E6F1FB; color: #0C447C; }
+  .diag-card { background: #fff; border-radius: 10px; border: 0.5px solid #d3d1c7; padding: 14px 16px; margin-bottom: 10px; }
+  .diag-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .diag-date { font-size: 11px; color: #888780; }
+  .diag-body { font-size: 12px; color: #5f5e5a; margin-top: 6px; line-height: 1.6; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+  .warn-box { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 12px; color: #712B13; line-height: 1.6; }
+  .note-box { background: #E1F5EE; border: 0.5px solid #5DCAA5; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 12px; color: #085041; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-text">
+    <h1>Медицинский дашборд</h1>
+    <p>Сыпков Алексей Васильевич · 16.06.1980 · 46 лет · Последнее обновление: 14.07.26</p>
+  </div>
+  <img src="Shield.png" alt="" class="header-icon">
+</div>
+
+<div class="container">
+
+<!-- ГОРМОНЫ -->
+<div class="section-title">Гормоны (последний срез: 06.07.26 / 29.06.26 / 09.06.26)</div>
+
+<div class="cards">
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">Эстрадиол (Е2)<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value high">261 <span style="font-size:13px">пмоль/л</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма муж: 40–161 ⚠ продолжает расти</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">Тестостерон общий<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value high">42,21 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 8,33–30,19 · перед переходом на 30×2/нед</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">Тестостерон общий<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ · trough</span></div>
+    <div class="card-value high">46,24 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма: 8,33–30,19 · Trough перед Омнадреном</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">Эстрадиол (Е2)<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ</span></div>
+    <div class="card-value high">236 <span style="font-size:13px">пмоль/л</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма муж: 40–161 ⚠ растёт</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тестостерон общий<br><span style="font-size:10px;color:#aaa">09.06.26 · KDL</span></div>
+    <div class="card-value high">38,08 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 8,33–30,19</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тестостерон общий<br><span style="font-size:10px;color:#aaa">31.05.26 · Invitro</span></div>
+    <div class="card-value high">45,59 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 8,9–42</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тестостерон (исходный)<br><span style="font-size:10px;color:#aaa">22.02.26 · KDL</span></div>
+    <div class="card-value ok">3,06 <span style="font-size:13px">нг/мл</span></div>
+    <div class="card-ref">Норма: 3,00–8,90</div>
+  </div>
+  <div class="card">
+    <div class="card-label">ИСТ (индекс своб. тест.)<br><span style="font-size:10px;color:#aaa">31.05.26 · Invitro</span></div>
+    <div class="card-value high">177,4 <span style="font-size:13px">%</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 24,5–113,3</div>
+  </div>
+  <div class="card">
+    <div class="card-label">ГСПГ<br><span style="font-size:10px;color:#aaa">31.05.26 · Invitro</span></div>
+    <div class="card-value ok">25,7 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">Норма: 16,2–68,5</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Эстрадиол (Е2)<br><span style="font-size:10px;color:#aaa">31.05.26 · Invitro</span></div>
+    <div class="card-value high">165 <span style="font-size:13px">пмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма муж: &lt;161</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Эстрадиол (Е2)<br><span style="font-size:10px;color:#aaa">09.06.26 · KDL</span></div>
+    <div class="card-value high">193 <span style="font-size:13px">пмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма муж: 40–161</div>
+  </div>
+  <div class="card">
+    <div class="card-label">ФСГ<br><span style="font-size:10px;color:#aaa">09.06.26 · KDL</span></div>
+    <div class="card-value low">0,09 <span style="font-size:13px">мМЕ/мл</span><span class="flag flag-low">↓↓</span></div>
+    <div class="card-ref">Норма муж: 0,95–11,95</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Пролактин<br><span style="font-size:10px;color:#aaa">09.06.26 · KDL</span></div>
+    <div class="card-value ok">228,95 <span style="font-size:13px">мМЕ/л</span></div>
+    <div class="card-ref">Норма: 72,66–407,40</div>
+  </div>
+  <div class="card">
+    <div class="card-label">ЛГ (22.02.26)<br>ФСГ исходный</div>
+    <div class="card-value ok">4,66 <span style="font-size:13px">мМЕ/мл</span></div>
+    <div class="card-ref">Здор. муж: 0,57–12,07</div>
+  </div>
+</div>
+
+<div class="warn-box">
+  ⚠ Эстрадиол (KDL, последовательный ряд): 220 (17.05) → 193 (09.06, спад) → 236 (29.06) → 261 (06.07) пмоль/л. Динамика немонотонная — между 17.05 и 09.06 было снижение, а не рост; устойчивый рост наблюдается только с 09.06. Тестостерон 06.07: 42,21 нмоль/л (норма 8,33–30,19) — ниже пика 29.06 (46,24), но всё ещё заметно выше нормы; этот замер сделан перед стартом схемы 30×2/нед. ФСГ подавлен до 0,09 мМЕ/мл — ожидаемо на ГЗТ. <strong>Позиция врача (06.07):</strong> уровень эстрадиола 261 — обычное явление для мужчин на ГЗТ, не требует немедленного вмешательства ингибитором ароматазы; решение по Анастрозолу отложено, наблюдение продолжается.
+</div>
+
+<!-- ГЕМАТОЛОГИЯ -->
+<div class="section-title">Гематология (13.07.26 / 06.07.26 / 29.06.26 / 09.06.26 / 31.05.26)</div>
+<div class="cards">
+  <div class="card" style="border:1.5px solid #BA1717;">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value high">54,2 <span style="font-size:13px">%</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма: 40,0–49,4 · ПОРОГ ФЛЕБОТОМИИ ДОСТИГНУТ (≥54) ⚠⚠</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Эритроциты<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value high">6,01 <span style="font-size:13px">×10¹²/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 4,44–5,61 · без изменений</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гемоглобин<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value high">176 <span style="font-size:13px">г/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 135–169</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">Тромбоциты<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value low">156 <span style="font-size:13px">×10⁹/л</span><span class="flag flag-low">↓↓</span></div>
+    <div class="card-ref">Норма: 166–308 · продолжают снижаться (было 164)</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">PDW (ширина тромб.)<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value high">23,9 <span style="font-size:13px">%</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма: 10,1–16,1 · резко ухудшился (было 16,6)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">MPV (средний объём тромб.)<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value high">13,7 <span style="font-size:13px">фл</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 9,3–12,1 · было 12,6</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лейкоциты<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value ok">6,42 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 3,91–8,77</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лимфоциты<br><span style="font-size:10px;color:#aaa">13.07.26 · КДЛ</span></div>
+    <div class="card-value ok">2,20 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 0,85–3,00 · вернулись в норму (было 3,36)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ · с гидратацией</span></div>
+    <div class="card-value high">53,7 <span style="font-size:13px">%</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма: 40,0–49,4 · порог флеботомии ≥54 ⚠</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Эритроциты<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value high">6,01 <span style="font-size:13px">×10¹²/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 4,44–5,61</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гемоглобин<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value high">178 <span style="font-size:13px">г/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 135–169</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тромбоциты<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value low">164 <span style="font-size:13px">×10⁹/л</span><span class="flag flag-low">↓</span></div>
+    <div class="card-ref">Норма: 166–308 · вышли за нижнюю границу</div>
+  </div>
+  <div class="card">
+    <div class="card-label">PDW (ширина тромб.)<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value high">16,6 <span style="font-size:13px">%</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 10,1–16,1 · улучшение с 21,1</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лейкоциты<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value ok">8,48 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 3,91–8,77</div>
+  </div>
+  <div class="card">
+    <div class="card-label">СОЭ<br><span style="font-size:10px;color:#aaa">06.07.26 · КДЛ</span></div>
+    <div class="card-value ok">3 <span style="font-size:13px">мм/час</span></div>
+    <div class="card-ref">Норма: 0–15</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Эритроциты<br><span style="font-size:10px;color:#aaa">09.06.26</span></div>
+    <div class="card-value high">5,88 <span style="font-size:13px">×10¹²/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 4,44–5,61</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гемоглобин<br><span style="font-size:10px;color:#aaa">09.06.26</span></div>
+    <div class="card-value high">174 <span style="font-size:13px">г/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 135–169</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">09.06.26</span></div>
+    <div class="card-value high">52,1 <span style="font-size:13px">%</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 40,0–49,4</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гемоглобин<br><span style="font-size:10px;color:#aaa">31.05.26</span></div>
+    <div class="card-value ok">17,1 <span style="font-size:13px">г/дл</span></div>
+    <div class="card-ref">Норма: 13,1–17,2</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">31.05.26 · Invitro</span></div>
+    <div class="card-value ok">49,0 <span style="font-size:13px">%</span></div>
+    <div class="card-ref">Норма: 39–50 · другая лаборатория, не для тренда</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">19.04.26 · KDL</span></div>
+    <div class="card-value high">52,4 <span style="font-size:13px">%</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 40,0–49,4 · доза 250 мг</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Гематокрит<br><span style="font-size:10px;color:#aaa">05.04.26 · KDL</span></div>
+    <div class="card-value high">49,8 <span style="font-size:13px">%</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Норма: 40,0–49,4 · первый замер выше нормы</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тромбоциты<br><span style="font-size:10px;color:#aaa">09.06.26</span></div>
+    <div class="card-value low">165 <span style="font-size:13px">×10⁹/л</span><span class="flag flag-low">↓</span></div>
+    <div class="card-ref">Норма: 166–308</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тромбоциты<br><span style="font-size:10px;color:#aaa">31.05.26</span></div>
+    <div class="card-value low">129 <span style="font-size:13px">тыс/мкл</span><span class="flag flag-low">↓</span></div>
+    <div class="card-ref">Норма: 150–400</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лейкоциты<br><span style="font-size:10px;color:#aaa">09.06.26</span></div>
+    <div class="card-value ok">6,09 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 3,91–8,77</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лейкоциты<br><span style="font-size:10px;color:#aaa">31.05.26</span></div>
+    <div class="card-value low">3,96 <span style="font-size:13px">тыс/мкл</span><span class="flag flag-low">↓</span></div>
+    <div class="card-ref">Норма: 4,5–11</div>
+  </div>
+  <div class="card" style="border:1.5px solid #e05a3a;">
+    <div class="card-label">PDW (ширина тромб.)<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ</span></div>
+    <div class="card-value high">21,1 <span style="font-size:13px">%</span><span class="flag flag-high">↑↑</span></div>
+    <div class="card-ref">Норма: 10,1–16,1 ↑ растёт ⚠</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Тромбоциты<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ</span></div>
+    <div class="card-value ok">169 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 166–308 ↑ восстанавливается</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Лейкоциты<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ</span></div>
+    <div class="card-value ok">6,95 <span style="font-size:13px">×10⁹/л</span></div>
+    <div class="card-ref">Норма: 3,91–8,77</div>
+  </div>
+  <div class="card">
+    <div class="card-label">СОЭ<br><span style="font-size:10px;color:#aaa">29.06.26 · КДЛ</span></div>
+    <div class="card-value ok">6 <span style="font-size:13px">мм/час</span></div>
+    <div class="card-ref">Норма: 0–15</div>
+  </div>
+</div>
+
+<div class="warn-box">
+  ⚠⚠ <strong>Гематокрит достиг порога флеботомии: 54,2% (13.07, KDL).</strong> Динамика (последовательный ряд KDL): 49,8% (05.04) → 52,4% (19.04) → 52,1% (09.06) → 53,0% (29.06) → 53,7% (06.07) → 54,2% (13.07). На графике не участвует точка 31.05 (49,0%, Invitro) — другая лаборатория с иной методикой и референсным диапазоном, показана только отдельной карточкой выше. Частичная флеботомия 10.07 (50 мл вместо 200 — не было помпы нужного объёма) не смогла удержать показатель ниже порога. Полная флеботомия по-прежнему не назначена на конкретную дату — теперь это уже не превентивная мера, а прямое показание, стоит добиваться конкретной даты на этой неделе. Тромбоциты продолжили снижаться (165→169→164→156) — уже заметный тренд вниз, не разовое отклонение. PDW резко ухудшился (16,6→23,9%) — хуже, чем даже до улучшения на 29.06 (21,1%). MPV тоже вырос (12,6→13,7). Лимфоциты вернулись в норму (3,36→2,20).
+</div>
+
+<!-- БИОХИМИЯ -->
+<div class="section-title">Биохимия крови</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table>
+  <thead>
+    <tr><th>Показатель</th><th>Результат</th><th>Референс</th><th>Дата</th><th>Статус</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>АлАТ</td><td>17 Ед/л</td><td>&lt;41</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>АсАТ</td><td>16 Ед/л</td><td>&lt;37</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Билирубин общий</td><td>17,4 мкмоль/л</td><td>3,4–20,5</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Гамма-ГТ</td><td>18 Ед/л</td><td>&lt;49</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Фосфатаза щелочная</td><td>72 Ед/л</td><td>40–150</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Общий белок</td><td>69 г/л</td><td>64–83</td><td>31.05.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Креатинин</td><td>118 мкмоль/л</td><td>74–110</td><td>09.06.26</td><td><span class="badge badge-high">↑ выше нормы</span></td></tr>
+    <tr><td>Глюкоза</td><td>5,05 ммоль/л</td><td>4,1–5,9</td><td>09.06.26</td><td><span class="badge badge-ok">норма</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ЛИПИДЫ -->
+<div class="section-title">Липидный профиль — динамика</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table>
+  <thead>
+    <tr><th>Показатель</th><th>25.11.24</th><th>22.02.26</th><th>09.07.26</th><th>Тренд</th><th>Ориентир</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Холестерин общий</td><td><span class="badge badge-high">6,9</span></td><td><span class="badge badge-high">6,1</span></td><td><span class="badge badge-ok">4,8</span></td><td>↓↓ норма</td><td>&lt;5,2 ммоль/л</td></tr>
+    <tr><td>Триглицериды</td><td><span class="badge badge-high">3,84</span></td><td><span class="badge badge-high">2,77</span></td><td><span class="badge badge-ok">1,30</span></td><td>↓↓ норма</td><td>&lt;1,70 ммоль/л</td></tr>
+    <tr><td>ЛПНП</td><td><span class="badge badge-high">4,4</span></td><td><span class="badge badge-high">4,2</span></td><td><span class="badge badge-ok">3,28</span></td><td>↓ вблизи оптимального</td><td>&lt;3,4 ммоль/л (целевой при умеренном риске)</td></tr>
+    <tr><td>Холестерин не-ЛПВП</td><td>—</td><td>—</td><td><span class="badge badge-ok">3,7</span></td><td>—</td><td>ориентир по риску индивидуален</td></tr>
+    <tr><td>АпоA1</td><td>—</td><td>—</td><td><span class="badge badge-ok">1,16</span></td><td>норма</td><td>1,05–1,75 г/л</td></tr>
+    <tr><td>АпоB</td><td>—</td><td>—</td><td><span class="badge badge-ok">0,86</span></td><td>норма</td><td>0,60–1,40 г/л</td></tr>
+    <tr><td>Липопротеин(a)</td><td>—</td><td>—</td><td><span class="badge badge-ok">9,71</span></td><td>норма, далеко от риска</td><td>&lt;30,00 мг/дл (риск ССЗ &gt;50)</td></tr>
+    <tr><td>ЛПВП</td><td><span class="badge badge-ok">1,35</span></td><td><span class="badge badge-ok">1,22</span></td><td><span class="badge badge-ok">1,09</span></td><td>стабильно, выше порога риска</td><td>&gt;1,03 ммоль/л</td></tr>
+    <tr><td>ЛПОНП</td><td>—</td><td>—</td><td><span class="badge badge-ok">0,60</span></td><td>норма</td><td>0,16–0,85</td></tr>
+    <tr><td>КА (коэф. атерогенности)</td><td><span class="badge badge-high">4,1</span></td><td><span class="badge badge-high">4,0</span></td><td><span class="badge badge-ok">3,4</span></td><td>↓ вошёл в норму</td><td>&lt;3,5</td></tr>
+    <tr><td>АЛТ</td><td><span class="badge badge-high">53,6</span></td><td><span class="badge badge-ok">17</span></td><td>—</td><td>↓↓ значительное улучшение</td><td>&lt;41 Ед/л</td></tr>
+    <tr><td>ГГТ</td><td><span class="badge badge-high">50,8</span></td><td><span class="badge badge-ok">18</span></td><td>—</td><td>↓↓ значительное улучшение</td><td>&lt;49 Ед/л</td></tr>
+    <tr><td>Мочевая кислота</td><td><span class="badge badge-high">459,5</span></td><td>—</td><td>—</td><td><span class="badge badge-ok">381,7 (29.06) ✅ норма</span></td><td>208,3–428,4 (муж)</td></tr>
+    <tr><td>HbA1c</td><td>—</td><td><span class="badge badge-ok">5,4% (22.02.26)</span></td><td>—</td><td><span class="badge badge-ok">оба замера в норме</span></td><td>&lt;6,0%</td></tr>
+    <tr><td>Ферритин</td><td>—</td><td><span class="badge badge-ok">202,4 мкг/л</span></td><td>—</td><td>—</td><td>20–250</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="note-box" style="margin-top:8px;">
+  ✓✓ <strong>Липидный профиль (09.07) — полностью закрыт, существенное улучшение:</strong> триглицериды нормализовались (2,77→1,30), КА вошёл в норму (4,0→3,4), холестерин общий в норме (4,8), ЛПВП стабилен выше порога риска (1,09), ЛПНП 3,28 (вблизи оптимального), холестерин не-ЛПВП 3,7, АпоA1 1,16 (норма), АпоB 0,86 (норма), Липопротеин(a) 9,71 — далеко от порога риска (30/50 мг/дл).<br>
+  ✓ Печень значительно улучшилась: АЛТ с 53,6 → 17, ГГТ с 50,8 → 18. Вероятно, сказалось снижение массы тела и Тирзепатид.<br>
+  ✓ HbA1c стабильно в норме: 5,1% (10.07.25) и 5,4% (22.02.26) — оба значения ниже порога 6,0%, гликемия под контролем.<br>
+  ✓ Мочевая кислота нормализовалась: 459,5 (11.2024) → 381,7 (29.06.26) — в пределах нормы, дальнейшего контроля не требует.
+</div>
+
+<!-- КОАГУЛОЛОГИЯ -->
+<div class="section-title">Коагулограмма (09.06.26)</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table>
+  <thead>
+    <tr><th>Показатель</th><th>Результат</th><th>Референс</th><th>Статус</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Фибриноген</td><td>3,02 г/л</td><td>2,0–4,0</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>АЧТВ</td><td>40,8 сек</td><td>30,8–41,4</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>МНО</td><td>1,20</td><td>0,8–1,2</td><td><span class="badge badge-ok">норма</span></td></tr>
+    <tr><td>Протромбин %</td><td>73%</td><td>70–120</td><td><span class="badge badge-ok">норма</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note-box">
+  ✓ Коагуляция в пределах нормы — риска гиперкоагуляции по стандартным показателям нет. Однако при гематокрите >52% общее кардиоваскулярное риско-профилирование важно учитывать.
+</div>
+
+<!-- ИНФЕКЦИИ -->
+<div class="section-title">Инфекции и серология (10.06.26)</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table>
+  <thead>
+    <tr><th>Исследование</th><th>Результат</th><th>Дата</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ВИЧ (антитела и антигены)</td><td><span class="badge badge-ok">отрицательный</span></td><td>10.06.26</td></tr>
+    <tr><td>HBsAg (гепатит B)</td><td><span class="badge badge-ok">не обнаружено</span></td><td>10.06.26</td></tr>
+    <tr><td>Anti-HCV (гепатит C)</td><td><span class="badge badge-ok">не обнаружено</span></td><td>10.06.26</td></tr>
+    <tr><td>Сифилис (Tr. pallidum)</td><td><span class="badge badge-ok">отрицательный</span></td><td>10.06.26</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- АРТЕРИАЛЬНОЕ ДАВЛЕНИЕ (ЖИВЫЕ ДАННЫЕ, 7 ДНЕЙ) -->
+<div class="section-title">
+  Артериальное давление (7 дней)
+  <span id="bpLiveBadge" style="font-size:10px;font-weight:400;color:#888780;">· загрузка…</span>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="height:200px;position:relative;"><canvas id="bpChart"></canvas></div>
+  <div id="bpError" style="display:none;font-size:12px;color:#712B13;margin-top:8px;">
+    Не удалось загрузить данные автоматически. Открыть таблицу напрямую:
+    <a href="https://docs.google.com/spreadsheets/d/1y_YVB55h0YtJ5vXi08R4UoTaJ7z5NvpstY6ZkdwnUYI/edit" target="_blank">Дневник АД — Сыпков</a>
+  </div>
+</div>
+
+<!-- ПУЛЬС (ЖИВЫЕ ДАННЫЕ, 7 ДНЕЙ) -->
+<div class="section-title">
+  Пульс (7 дней)
+  <span id="pulseLiveBadge" style="font-size:10px;font-weight:400;color:#888780;">· загрузка…</span>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="height:180px;position:relative;"><canvas id="pulseChart"></canvas></div>
+  <div id="pulseError" style="display:none;font-size:12px;color:#712B13;margin-top:8px;">
+    Не удалось загрузить данные автоматически. Открыть таблицу напрямую:
+    <a href="https://docs.google.com/spreadsheets/d/1y_YVB55h0YtJ5vXi08R4UoTaJ7z5NvpstY6ZkdwnUYI/edit" target="_blank">Дневник АД — Сыпков</a>
+  </div>
+</div>
+<div class="note-box">
+  ℹ Эти графики подтягивают данные напрямую из Google Таблицы «Дневник АД» при каждом открытии файла (последние 7 дней) — всегда актуальны, даже если сам дашборд давно не обновлялся вручную. Требуется подключение к интернету и открытие файла как веб-страницы (не локально на iOS).
+</div>
+
+<!-- ПРОЧИЕ -->
+<div class="section-title">Прочие маркеры</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table>
+  <thead>
+    <tr><th>Показатель</th><th>Результат</th><th>Статус</th><th>Дата</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Витамин D (25-OH)</td><td>32,6 нг/мл</td><td><span class="badge badge-ok">целевой 30–60</span></td><td>10.07.25</td></tr>
+    <tr><td>Витамин D (25-OH)</td><td>22,0 нг/мл</td><td><span class="badge badge-high">↓ недостаточность (20–30)</span></td><td>13.07.26</td></tr>
+    <tr><td>Витамин B9 (фолиевая)</td><td>3,9 нг/мл</td><td><span class="badge badge-high">норма, у нижней границы (3,1–20,5)</span></td><td>13.07.26</td></tr>
+    <tr><td>Витамин B12</td><td>465 пг/мл</td><td><span class="badge badge-ok">норма (187–883)</span></td><td>13.07.26</td></tr>
+    <tr><td>Пролактин</td><td>228,95 мМЕ/л</td><td><span class="badge badge-ok">норма</span></td><td>09.06.26</td></tr>
+    <tr><td>Плотность мочи</td><td>1.026</td><td><span class="badge badge-high">↑ чуть выше</span></td><td>09.06.26</td></tr>
+    <tr><td>Инсулин (22.02.26)</td><td>10,94 мкМЕ/мл</td><td><span class="badge badge-ok">норма 2,3–26,4</span></td><td>22.02.26</td></tr>
+    <tr><td>Триглицериды (22.02, для справки)</td><td>2,77 ммоль/л</td><td><span class="badge badge-ok">нормализовались до 1,30 к 09.07 — см. Липидный профиль</span></td><td>22.02.26</td></tr>
+    <tr><td>Кортизол (утро)</td><td>90,2 нг/мл</td><td><span class="badge badge-ok">норма 46–206</span></td><td>22.02.26</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div style="text-align:center;margin:24px 0;">
+  <a href="test-relevance.html" style="display:inline-block;background:#534AB7;color:#fff;text-decoration:none;font-size:13px;font-weight:500;padding:10px 20px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.12);">
+    📋 Открыть «Актуальность анализов»
+  </a>
+</div>
+
+<!-- КОНСУЛЬТАЦИИ И ДИАГНОЗЫ -->
+<div class="section-title">Консультации и диагнозы специалистов</div>
+<div class="grid2">
+  <div class="diag-card">
+    <div class="diag-title">Андролог/косметолог (Зеленский М.) — визит 13.07.26</div>
+    <div class="diag-date">13.07.26, 17:15-18:15 · Вольский пер., 15</div>
+    <div class="diag-body">
+      <strong>Омнадрен:</strong> доза снижена до 25 мг × 2/нед (Пн+Чт), вместо 30 мг × 2/нед — реакция на продолжающийся рост гематокрита (54,2% на 13.07).<br>
+      <strong>Флеботомия:</strong> полная процедура + инфузия физраствора назначена на <strong>четверг 16.07.26, 17:00-18:30</strong>.<br>
+      <strong>Отёчность лица:</strong> сегодня выполнена инъекция гиалуроновой кислоты + Маннитол. Дополнительно назначен <strong>ЛимфоТранзит</strong> (курс, официально прописан).<br>
+      <strong>Акне:</strong> решение по системной терапии пока не найдено, продолжается топический уход (Циновит).
+    </div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Колопроктолог — Геморрой II ст. · Операция выполнена ✓</div>
+    <div class="diag-date">04.06.26 первичный → операция 12.06.26 → осмотры 19.06, 03.07.26 · К64.1</div>
+    <div class="diag-body">
+      <strong>12.06.26</strong> — лазерная дезартериализация внутренних и наружных геморроидальных узлов, аппарат BIOLITEC.<br>
+      <strong>19.06.26</strong> — повторный осмотр: стадия выздоровления.<br>
+      <strong>03.07.26</strong> (Терехов А.М.) — повторный приём. Диагноз: хронический геморрой 2 ст., состояние после операции. Назначено: свечи с календулой/Гепатромбин утром 10 дней, свечи с облепихой на ночь 10 дней, Натальсид при выделении крови 7-10 дней, Форлакс 1п/день 10 дней. Явка через 20 дней (~23.07). На словах: <strong>тренировки можно возобновлять через неделю (~10.07)</strong>, <strong>противопоказаний к флеботомии нет</strong>.
+    </div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Гастроэнтеролог — ГЭРБ + хронический гастродуоденит + эрозия желудка</div>
+    <div class="diag-date">09.02.26 · K21 · ММК</div>
+    <div class="diag-body">ГЭРБ эндоскопически негативная форма. Хронический поверхностный гастродуоденит. Хроническая эрозия желудка. Hp — <strong>не обнаружен</strong> (цитология 09.02.26). Назначено: рабепразол, де-нол, диспевикт. Направлена ЭГДС с биопсией.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Гастроэнтеролог — Хронический некалькулёзный холецистит (обострение)</div>
+    <div class="diag-date">07.06.26 · Диагностический центр · K81.9</div>
+    <div class="diag-body">Омепразол 20 мг × 2 нед, Мебеверин 200 мг × 2 нед, Бускопан по требованию. Повтор: 21.06.26.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Офтальмолог — Пресбиопия обоих глаз</div>
+    <div class="diag-date">08.05.26 · H52.4</div>
+    <div class="diag-body">Острота зрения OD=OS=1,0. Очки для близи +1,0 / +1,0. Увлажняющие капли Артелак Ночной.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Травматолог + Рентген + МРТ — Правый плечевой сустав</div>
+    <div class="diag-date">05.05.26 · 20.04.26 · 21.04.26 · M25.8 / M19</div>
+    <div class="diag-body">
+      <strong>Рентген 20.04.26:</strong> Артроз плечевого сустава I ст., деформирующий эрозивный артроз акромиально-ключичного сочленения. Не исключается повреждение Банкарта (нижняя часть суставной губы).<br>
+      <strong>МРТ 21.04.26:</strong> Артроз + синовит плечевого и акромиоключичного суставов. Тендинопатия сухожилия надостной мышцы (целостность сохранена). Дегенеративные изменения суставной губы гленоида. Ротаторная манжета — без разрывов.<br>
+      <strong>Травматолог 05.05.26:</strong> Плечелопаточный периартроз, ДОА ключично-акромиального сустава. Назначено УВТ № 10.
+    </div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">УЗИ брюшной полости — Холецистит, диф. изменения ПЖ</div>
+    <div class="diag-date">07.06.26</div>
+    <div class="diag-body">Утолщение и уплотнение стенки желчного пузыря, сгущение желчи. Диффузные изменения поджелудочной железы. Печень — без изменений.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">ЭКГ — Нарушение внутрижелудочковой проводимости</div>
+    <div class="diag-date">23.01.23 · 09.01.25</div>
+    <div class="diag-body">Синусовый ритм, ЧСС 73–79 уд/мин. Электрическая ось не отклонена. Нарушение в/ж проводимости — стабильная картина на двух ЭКГ.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">Пяточные шпоры</div>
+    <div class="diag-date">10.12.23 · рентген</div>
+    <div class="diag-body">Экзостоз до 5 мм в области ахиллова сухожилия с обеих сторон, 1,5–4,5 мм подошвенного апоневроза. Рекомендована консультация ортопеда.</div>
+  </div>
+  <div class="diag-card">
+    <div class="diag-title">УЗИ брюшной полости (старое)</div>
+    <div class="diag-date">18.10.22</div>
+    <div class="diag-body">Диффузные изменения печени (вероятно стеатогепатоз), аномалия формы желчного пузыря. На 07.06.26: печень нормализовалась — позитивная динамика.</div>
+  </div>
+</div>
+
+<!-- КЛЮЧЕВЫЕ ВЫВОДЫ -->
+<div class="section-title">Ключевые моменты для обсуждения с врачом (на 14.07.26)</div>
+<div class="warn-box">
+  <strong>Требуют контроля — СРОЧНО:</strong><br>
+  1. <strong>Гематокрит 54,2% (13.07, KDL) — порог флеботомии достигнут.</strong> Частичная флеботомия 10.07 (50 мл вместо 200) не удержала показатель. Нужна полная процедура на конкретную дату — добиться назначения на этой неделе, это уже не превентивная мера.<br>
+  2. <strong>Тромбоциты 156×10⁹/л (13.07)</strong> — устойчивый тренд вниз (165→169→164→156), уже не разовое отклонение. PDW резко ухудшился (16,6→23,9%), MPV тоже вырос (12,6→13,7) — стоит спросить, не связано ли это с частичной флеботомией/забором крови, или требует отдельного разбора (B12/фолиевая уже заказаны).<br>
+  3. Эстрадиол 261 пмоль/л (06.07, KDL) — существенно выше нормы (40-161), по позиции врача — обычное явление для мужчин на ГЗТ, наблюдение продолжается без ингибитора ароматазы.<br>
+  4. Тестостерон 42,21 нмоль/л (06.07) — заметно выше нормы (8,33-30,19), замер сделан перед стартом схемы 30×2/нед.<br>
+</div>
+<div class="note-box">
+  <strong>Позитивные моменты:</strong><br>
+  ✓ Печень значительно улучшилась — АЛТ с 53,6 → 17, ГГТ с 50,8 → 18, стеатогепатоз (2022) не подтверждается на УЗИ 2026.<br>
+  ✓ Коагулограмма — в норме, риска гиперкоагуляции по стандартным показателям нет.<br>
+  ✓ Лимфоциты вернулись в норму (13.07: 2,20, было 3,36 на 06.07).<br>
+  ✓ <strong>Липидный профиль (09.07) существенно улучшился</strong> — триглицериды нормализовались (2,77→1,30), КА вошёл в норму (4,0→3,4), холестерин общий и ЛПВП в норме, ЛПНП 3,28 (вблизи оптимального).<br>
+  ✓ Мочевая кислота нормализовалась — 459,5 (11.2024) → 381,7 (29.06.26), в пределах нормы.<br>
+  ✓ Колопроктолог (03.07) — тренировки разрешены с ~10.07 (уже возобновлены), противопоказаний к флеботомии нет.<br>
+  ✓ Витамин B12 (465, норма) и общий вклад в снижение тромбоцитов — маловероятен по этой причине. Фолиевая кислота (3,9) у нижней границы нормы — возможный частичный фактор, не исключён.<br>
+  ⚠ Витамин D снизился до 22,0 нг/мл (недостаточность, было 32,6 год назад) — обсудить добавку с врачом.<br>
+  ✓ Пролактин — в норме.<br>
+  ✓ Инфекции (ВИЧ, гепатиты B/C, сифилис) — отрицательные.<br>
+  ✓ Глюкоза, HbA1c — в норме (Тирзепатид работает, гликемия под контролем).<br>
+</div>
+
+<!-- ДИНАМИКА ТЕСТОСТЕРОНА -->
+<div class="section-title">Динамика тестостерона на фоне ГЗТ</div>
+
+<div class="cards" style="margin-bottom:12px;">
+  <div class="card">
+    <div class="card-label">03.03.26 · KDL</div>
+    <div class="card-value ok">15,86 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">До 1-й инъекции</div>
+  </div>
+  <div class="card">
+    <div class="card-label">22.03.26 · KDL<br><span style="font-size:10px;color:#aaa">↓ инъекция 25.03</span></div>
+    <div class="card-value low">9,35 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">Перед 250 мг</div>
+  </div>
+  <div class="card">
+    <div class="card-label">19.04.26 · KDL<br><span style="font-size:10px;color:#aaa">25 дней после 250 мг</span></div>
+    <div class="card-value ok">19,23 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">В целевом диапазоне ✓</div>
+  </div>
+  <div class="card">
+    <div class="card-label">17.05.26 · KDL<br><span style="font-size:10px;color:#aaa">20 дней после 250 мг</span></div>
+    <div class="card-value ok">28,25 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">У верхней границы нормы</div>
+  </div>
+  <div class="card">
+    <div class="card-label">31.05.26 · Invitro<br><span style="font-size:10px;color:#aaa">4 дня после 125 мг</span></div>
+    <div class="card-value high">45,59 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Пик, выше нормы</div>
+  </div>
+  <div class="card">
+    <div class="card-label">09.06.26 · KDL<br><span style="font-size:10px;color:#aaa">13 дней после 125 мг</span></div>
+    <div class="card-value high">38,08 <span style="font-size:13px">нмоль/л</span><span class="flag flag-high">↑</span></div>
+    <div class="card-ref">Снижается, всё ещё выше</div>
+  </div>
+  <div class="card">
+    <div class="card-label">10.07.25 · КДЛ<br><span style="font-size:10px;color:#aaa">до начала ГЗТ</span></div>
+    <div class="card-value ok">13,08 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">В норме, ближе к нижней границе</div>
+  </div>
+  <div class="card">
+    <div class="card-label">25.11.24 · исходный<br><span style="font-size:10px;color:#aaa">до ГЗТ</span></div>
+    <div class="card-value low">11,03 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">Пограничный гипогонадизм</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Целевой диапазон<br><span style="font-size:10px;color:#aaa">на 60 мг/нед</span></div>
+    <div class="card-value ok">15–25 <span style="font-size:13px">нмоль/л</span></div>
+    <div class="card-ref">EAU/ISSAM ориентир</div>
+  </div>
+</div>
+
+<div style="position:relative;width:100%;height:220px;background:#fff;border-radius:10px;border:0.5px solid #d3d1c7;padding:8px;margin-bottom:8px;">
+  <canvas id="testChart" role="img" aria-label="Динамика тестостерона: 10.6 нмоль/л в феврале, 45.59 в мае, 38.08 в июне">Динамика тестостерона на фоне ГЗТ</canvas>
+</div>
+
+<div class="note-box">
+  Хронология: 11,03 нмоль/л (11.2024) → 13,08 (07.2025) → рост до 15,86 (03.2026) → провал до 9,35 → старт ГЗТ 25.03 → пики на 250 мг → пик 45,59 на 125 мг → снижение до 38,08. Следующая точка после перехода на 60 мг/нед покажет, вышел ли уровень в целевой диапазон.
+</div>
+
+<!-- РАСПИСАНИЕ ИНЪЕКЦИЙ -->
+<div class="section-title">Расписание инъекций Омнадрена — полная история</div>
+
+<div style="background:#E6F1FB;border:0.5px solid #85B7EB;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#0C447C;line-height:1.6;">
+  ℹ <strong>13.07.26 — доза снижена</strong> (решение доктора Зеленского): <strong>25 мг × 2/нед (Пн + Чт)</strong>, вместо 30 мг × 2/нед (действовало 06.07–10.07). Обе инъекции выполняются в клинике у врача (Вольский пер., 15) — самостоятельное дробление масляного раствора не практикуется.
+</div>
+
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:8px;">
+  <thead>
+    <tr><th>Дата</th><th>День</th><th>Доза</th><th>Дней до след.</th><th>Статус</th></tr>
+  </thead>
+  <tbody>
+    <tr style="border-left:4px solid #BA7517;">
+      <td>25.03.26</td><td>Ср</td><td>250 мг</td><td>33</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #BA7517;">
+      <td>27.04.26</td><td>Пн</td><td>250 мг</td><td>30</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #D85A30;">
+      <td>27.05.26</td><td>Ср</td><td>125 мг</td><td>14</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #D85A30;">
+      <td>10.06.26</td><td>Ср</td><td>125 мг</td><td>14</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #534AB7;">
+      <td>22.06.26</td><td>Пн</td><td>60 мг</td><td>7</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #534AB7;">
+      <td>29.06.26</td><td>Пн</td><td>60 мг</td><td>7</td>
+      <td><span class="badge badge-ok">выполнено</span></td>
+    </tr>
+    <tr style="border-left:4px solid #1D9E75;">
+      <td>06.07.26</td><td>Пн</td><td>30 мг</td><td>3</td>
+      <td><span class="badge badge-ok">выполнено · новая схема</span></td>
+    </tr>
+    <tr style="border-left:4px solid #1D9E75;">
+      <td>10.07.26</td><td>Пт <span style="font-size:10px;color:#888;">(перенос с Чт 09.07)</span></td><td>30 мг</td><td>4</td>
+      <td><span class="badge badge-ok">выполнено · разовый перенос</span></td>
+    </tr>
+    <tr style="border-left:4px solid #E64980;">
+      <td>13.07.26</td><td>Пн</td><td>25 мг</td><td>3</td>
+      <td><span class="badge badge-ok">выполнено · доза снижена</span></td>
+    </tr>
+    <tr style="border-left:4px solid #E64980;background:#fdf1f5;">
+      <td><strong>16.07.26</strong></td><td><strong>Чт</strong></td><td>25 мг</td><td>4</td>
+      <td><span class="badge" style="background:#fdf1f5;color:#E64980;">план · совместно с флеботомией</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="legend-strip" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;">
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#BA7517;display:inline-block;"></span>250 мг</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#D85A30;display:inline-block;"></span>125 мг</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#534AB7;display:inline-block;"></span>60 мг/нед</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#1D9E75;display:inline-block;"></span>30 мг ×2/нед</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#E64980;display:inline-block;"></span>25 мг ×2/нед</div>
+</div>
+<div class="note-box" style="margin-top:0;margin-bottom:16px;">
+  ℹ 10.07 инъекция объединена с визитом на флеботомию (разовое смещение дня, базовая схема пн/чт остаётся неизменной — см. правку от 06.07).
+</div>
+
+<div class="section-title" style="margin-top:20px;">Расписание инъекций ХГЧ — последние 7</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:8px;">
+  <thead>
+    <tr><th>Дата</th><th>День</th><th>Доза</th><th>Статус</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>30.06.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>02.07.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>05.07.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>07.07.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>09.07.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>12.07.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>14.07.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+  </tbody>
+</table>
+</div>
+<div class="note-box" style="margin-top:0;margin-bottom:12px;">
+  📅 Далее по плану: 16.07 (чт, 19:30 — сдвинуто из-за флеботомии/Омнадрена в этот день на 17:00-18:30).
+</div>
+<details style="margin-bottom:12px;">
+  <summary style="cursor:pointer;font-size:12px;color:#3C3489;padding:6px 0;">Показать более раннюю историю (19 записей)</summary>
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-top:8px;">
+    <thead>
+      <tr><th>Дата</th><th>День</th><th>Доза</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>15.04.26</td><td>Ср</td><td>1 500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>30.04.26</td><td>Чт</td><td>3 000 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>08.05.26</td><td>Пт</td><td>3 000 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>15.05.26</td><td>Пт</td><td>3 000 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>21.05.26</td><td>Чт</td><td>3 000 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>29.05.26</td><td>Пт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>31.05.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>02.06.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>04.06.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>07.06.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>09.06.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>11.06.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>14.06.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>16.06.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>18.06.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>21.06.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>23.06.26</td><td>Вт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>25.06.26</td><td>Чт</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>28.06.26</td><td>Вс</td><td>500 ед</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    </tbody>
+  </table>
+</div>
+</details>
+<div class="note-box" style="margin-bottom:16px;">
+  С 29.05.26 — поддерживающий режим: 500 ед × 3 раза/нед (Вт, Чт, Вс) = 1 500 ед/нед. До этого — ударные дозы 1 500–3 000 ед для стимуляции яичков на фоне старта ГЗТ.
+</div>
+
+<div class="section-title" style="margin-top:20px;">Расписание инъекций Тирзепатида — последние 7</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:8px;">
+  <thead>
+    <tr><th>Дата</th><th>День</th><th>Доза</th><th>Статус</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>29.05.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>05.06.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>12.06.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>19.06.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>26.06.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>03.07.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    <tr><td>10.07.26</td><td>Пт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+  </tbody>
+</table>
+</div>
+<details style="margin-bottom:12px;">
+  <summary style="cursor:pointer;font-size:12px;color:#3C3489;padding:6px 0;">Показать более раннюю историю (15 записей)</summary>
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-top:8px;">
+    <thead>
+      <tr><th>Дата</th><th>День</th><th>Доза</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>12.02.26</td><td>Чт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>19.02.26</td><td>Чт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>26.02.26</td><td>Чт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>05.03.26</td><td>Чт</td><td>2,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>12.03.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>19.03.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>26.03.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>02.04.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>09.04.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>16.04.26</td><td>Чт</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>23.04.26</td><td>Чт</td><td>7,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>30.04.26</td><td>Чт</td><td>7,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>07.05.26</td><td>Чт</td><td>7,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>14.05.26</td><td>Чт</td><td>7,5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+      <tr><td>24.05.26</td><td>Вс</td><td>5 мг</td><td><span class="badge badge-ok">выполнено</span></td></tr>
+    </tbody>
+  </table>
+</div>
+</details>
+<div class="note-box" style="margin-bottom:16px;">
+  <strong>История доз:</strong> 2,5 мг × 4 нед (12.02–05.03, Чт) → 5 мг × 6 нед (12.03–16.04, Чт) → 7,5 мг × 4 нед (23.04–14.05, Чт) → 5 мг разово (24.05, Вс) → 2,5 мг (29.05–н.в., Пт).
+</div>
+
+<div style="background:#fff;border-radius:10px;border:0.5px solid #d3d1c7;padding:14px 16px;margin-bottom:10px;">
+  <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:#444441;">Еженедельный протокол инъекций</div>
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="border:none;background:transparent;">
+    <thead>
+      <tr>
+        <th style="background:transparent;color:#888780;width:80px;">День</th>
+        <th style="background:transparent;color:#888780;">Омнадрен</th>
+        <th style="background:transparent;color:#888780;">ХГЧ</th>
+        <th style="background:transparent;color:#888780;">Тирзепатид</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Пн</strong></td><td><span class="badge badge-info">30 мг</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Вт</td><td>—</td><td><span class="badge badge-ok">500 ед</span></td><td>—</td></tr>
+      <tr><td>Ср</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><strong>Чт</strong></td><td><span class="badge badge-info">30 мг</span></td><td><span class="badge badge-ok">500 ед</span></td><td>—</td></tr>
+      <tr><td>Пт</td><td>—</td><td>—</td><td><span class="badge badge-high">2,5 мг</span></td></tr>
+      <tr><td>Сб</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><strong>Вс</strong></td><td>—</td><td><span class="badge badge-ok">500 ед</span></td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<div class="note-box">
+  ✓ С 06.07.26 Омнадрен разбит на Пн+Чт (30+30 мг) — цель сгладить пики/ямы без изменения недельной дозы (60 мг/нед). В четверг теперь совпадает с ХГЧ (500 ед) — две разные инъекционные зоны. Тирзепатид в пятницу сохраняет дистанцию от обоих уколов Омнадрена.
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ===== ЦВЕТА ПЕРИОДОВ ПРОТОКОЛА ОМНАДРЕНА (общие для всех графиков) =====
+const PCOL = { none:'#888780', d250:'#BA7517', d125:'#D85A30', d60:'#534AB7', d30x2:'#1D9E75', d25x2:'#E64980' };
+function pBandColor(hex, alpha) { return hex + alpha; }
+function pBoundaryPixel(scale, idx, numLabels, chartArea) {
+  if (idx <= 0) return chartArea.left;
+  if (idx >= numLabels) return chartArea.right;
+  const pPrev = scale.getPixelForValue(idx - 1);
+  const pCur = scale.getPixelForValue(idx);
+  return (pPrev + pCur) / 2;
+}
+const protocolBandsPlugin = {
+  id: 'protocolBands',
+  beforeDraw(chart, args, opts) {
+    if (!opts || !opts.bands) return;
+    const { ctx, chartArea, scales } = chart;
+    const xScale = scales.x;
+    const numLabels = chart.data.labels.length;
+    ctx.save();
+    opts.bands.forEach(b => {
+      const x0 = pBoundaryPixel(xScale, b.start, numLabels, chartArea);
+      const x1 = pBoundaryPixel(xScale, b.end, numLabels, chartArea);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x0, chartArea.top, x1 - x0, chartArea.height);
+    });
+    ctx.restore();
+  }
+};
+Chart.register(protocolBandsPlugin);
+
+const labels = [
+  '25.11.24', '10.07.25', '03.03', '22.03', '25.03\n↓250мг', '19.04', '27.04\n↓250мг',
+  '17.05', '27.05\n↓125мг', '31.05', '09.06', '10.06\n125мг', '22.06\n↓60мг', '29.06\ntrough', '06.07\n↓30×2', ''
+];
+const tData = [11.03, 13.08, 15.86, 9.35, null, 19.23, null, 28.25, null, 45.59, 38.08, null, null, 46.24, 42.21, null];
+const tBands = [
+  { start: 0, end: 4, color: pBandColor(PCOL.none, '22') },
+  { start: 4, end: 8, color: pBandColor(PCOL.d250, '28') },
+  { start: 8, end: 12, color: pBandColor(PCOL.d125, '28') },
+  { start: 12, end: 14, color: pBandColor(PCOL.d60, '28') },
+  { start: 14, end: 15, color: pBandColor(PCOL.d30x2, '28') },
+  { start: 15, end: 16, color: pBandColor(PCOL.d25x2, '28') },
+];
+
+new Chart(document.getElementById('testChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'Тестостерон (нмоль/л)',
+        data: tData,
+        borderColor: '#534AB7',
+        backgroundColor: '#AFA9EC33',
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: tData.map(v =>
+          v === null ? 'transparent' : v > 30.19 ? '#D85A30' : v < 12 ? '#BA7517' : '#1D9E75'
+        ),
+        tension: 0.3,
+        spanGaps: true,
+        fill: false,
+      },
+      {
+        label: 'Верхняя норма (30,19)',
+        data: Array(labels.length).fill(30.19),
+        borderColor: '#D85A30',
+        borderWidth: 1,
+        borderDash: [4,4],
+        pointRadius: 0,
+      },
+      {
+        label: 'Целевой макс. (25)',
+        data: Array(labels.length).fill(25),
+        borderColor: '#1D9E75',
+        borderWidth: 1,
+        borderDash: [6,4],
+        pointRadius: 0,
+        fill: '+1',
+        backgroundColor: '#1D9E7518',
+      },
+      {
+        label: 'Целевой мин. (15)',
+        data: Array(labels.length).fill(15),
+        borderColor: '#1D9E75',
+        borderWidth: 1,
+        borderDash: [6,4],
+        pointRadius: 0,
+        fill: false,
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 12 } },
+      protocolBands: { bands: tBands },
+      tooltip: { callbacks: { label: ctx => ctx.raw !== null ? ctx.dataset.label + ': ' + ctx.raw + ' нмоль/л' : '' } }
+    },
+    scales: {
+      x: { ticks: { font: { size: 10 }, maxRotation: 0 } },
+      y: { min: 0, max: 52, ticks: { callback: v => v, font: { size: 11 } }, title: { display: true, text: 'нмоль/л', font: { size: 11 } } }
+    }
+  }
+});
+</script>
+
+<!-- ОАК ГРАФИКИ -->
+<div class="section-title" style="margin-top:20px;">Динамика ОАК и эстрадиола</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">Гематокрит (%)</div>
+  <div style="height:180px;position:relative;"><canvas id="hctChart"></canvas></div>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">Гемоглобин (г/л) и Эритроциты (×10¹²/л)</div>
+  <div style="height:180px;position:relative;"><canvas id="hgbChart"></canvas></div>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">Эстрадиол Е2 (пмоль/л)</div>
+  <div style="height:180px;position:relative;"><canvas id="estradiolChart"></canvas></div>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">Тромбоциты (×10⁹/л)</div>
+  <div style="height:180px;position:relative;"><canvas id="pltChart"></canvas></div>
+</div>
+<div class="legend-strip" style="display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px;">
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#888780;display:inline-block;"></span>до ГЗТ</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#BA7517;display:inline-block;"></span>250 мг</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#D85A30;display:inline-block;"></span>125 мг</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#534AB7;display:inline-block;"></span>60 мг/нед</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#1D9E75;display:inline-block;"></span>30 мг ×2/нед</div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#fff;border:0.5px solid #d3d1c7;border-radius:20px;padding:3px 9px;"><span style="width:9px;height:9px;border-radius:50%;background:#E64980;display:inline-block;"></span>25 мг ×2/нед</div>
+</div>
+<script>
+const oakLabels = ['05.04.26', '19.04.26', '09.06.26', '29.06.26', '06.07.26', '13.07.26', ''];
+
+new Chart(document.getElementById('hctChart'), {
+  type: 'line',
+  data: {
+    labels: oakLabels,
+    datasets: [
+      { label: 'Гематокрит (%), KDL', data: [49.8, 52.4, 52.1, 53.0, 53.7, 54.2, null], borderColor: '#D85A30', backgroundColor: '#D85A3022', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: true, spanGaps: true },
+      { label: 'Норма макс. (49,4%)', data: [49.4, 49.4, 49.4, 49.4, 49.4, 49.4, 49.4], borderColor: '#888', borderWidth: 1, borderDash: [5,5], pointRadius: 0 },
+      { label: 'Порог флеботомии (54%)', data: [54, 54, 54, 54, 54, 54, 54], borderColor: '#BA1717', borderWidth: 1, borderDash: [3,3], pointRadius: 0 },
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } }, protocolBands: { bands: [
+    { start: 0, end: 2, color: pBandColor(PCOL.d250, '28') },
+    { start: 2, end: 3, color: pBandColor(PCOL.d125, '28') },
+    { start: 3, end: 4, color: pBandColor(PCOL.d60, '28') },
+    { start: 4, end: 6, color: pBandColor(PCOL.d30x2, '28') },
+    { start: 6, end: 7, color: pBandColor(PCOL.d25x2, '28') },
+  ] } }, scales: { y: { min: 44, max: 56 } } }
+});
+
+const cbcLabels = ['09.06.26', '29.06.26', '06.07.26', '13.07.26', ''];
+
+new Chart(document.getElementById('hgbChart'), {
+  type: 'line',
+  data: {
+    labels: cbcLabels,
+    datasets: [
+      { label: 'Гемоглобин (г/л), KDL', data: [174, 174, 178, 176, null], borderColor: '#534AB7', backgroundColor: '#534AB722', borderWidth: 2, pointRadius: 5, tension: 0.3, yAxisID: 'y', spanGaps: true },
+      { label: 'Эритроциты (×10¹²/л), KDL', data: [5.88, 5.89, 6.01, 6.01, null], borderColor: '#BA7517', backgroundColor: '#BA751722', borderWidth: 2, pointRadius: 5, tension: 0.3, yAxisID: 'y2', spanGaps: true },
+      { label: 'Норм. Hb макс (169)', data: [169, 169, 169, 169, 169], borderColor: '#888', borderWidth: 1, borderDash: [5,5], pointRadius: 0, yAxisID: 'y' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } }, protocolBands: { bands: [
+      { start: 0, end: 1, color: pBandColor(PCOL.d125, '28') },
+      { start: 1, end: 2, color: pBandColor(PCOL.d60, '28') },
+      { start: 2, end: 4, color: pBandColor(PCOL.d30x2, '28') },
+      { start: 4, end: 5, color: pBandColor(PCOL.d25x2, '28') },
+    ] } },
+    scales: {
+      y: { type: 'linear', position: 'left', min: 160, max: 182, title: { display: true, text: 'Hb г/л', font: { size: 10 } } },
+      y2: { type: 'linear', position: 'right', min: 5.6, max: 6.1, title: { display: true, text: 'RBC', font: { size: 10 } }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+const estLabels = ['17.05.26', '09.06.26', '29.06.26', '06.07.26', ''];
+new Chart(document.getElementById('estradiolChart'), {
+  type: 'line',
+  data: {
+    labels: estLabels,
+    datasets: [
+      { label: 'Эстрадиол (пмоль/л), KDL', data: [220, 193, 236, 261, null], borderColor: '#993C1D', backgroundColor: '#993C1D22', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: true, spanGaps: true },
+      { label: 'Верхняя норма (161)', data: [161, 161, 161, 161, 161], borderColor: '#1D9E75', borderWidth: 1, borderDash: [6,4], pointRadius: 0 },
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } }, protocolBands: { bands: [
+    { start: 0, end: 1, color: pBandColor(PCOL.d250, '28') },
+    { start: 1, end: 2, color: pBandColor(PCOL.d125, '28') },
+    { start: 2, end: 3, color: pBandColor(PCOL.d60, '28') },
+    { start: 3, end: 4, color: pBandColor(PCOL.d30x2, '28') },
+    { start: 4, end: 5, color: pBandColor(PCOL.d25x2, '28') },
+  ] } }, scales: { y: { min: 100, max: 280, title: { display: true, text: 'пмоль/л', font: { size: 10 } } } } }
+});
+
+new Chart(document.getElementById('pltChart'), {
+  type: 'line',
+  data: {
+    labels: cbcLabels,
+    datasets: [
+      { label: 'Тромбоциты (×10⁹/л), KDL', data: [165, 169, 164, 156, null], borderColor: '#1D9E75', backgroundColor: '#1D9E7522', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: true, spanGaps: true },
+      { label: 'Норма мин. (166)', data: [166, 166, 166, 166, 166], borderColor: '#888', borderWidth: 1, borderDash: [5,5], pointRadius: 0 },
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } }, scales: { y: { min: 100, max: 220 } } }
+});
+</script>
+
+<div style="text-align:center;color:#888780;font-size:11px;padding:20px 0;">
+  Данные носят информационный характер. Интерпретацию и рекомендации даёт лечащий врач.
+</div>
+
+</div>
+<!-- ===== ПРОТОКОЛ ДОБАВОК ===== -->
+<div class="section-title" style="margin-top:32px;">Протокол добавок и препаратов — расписание по времени суток</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:12px;">
+  <thead>
+    <tr><th>Время</th><th>Приём</th><th>Заметка</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Утро, до завтрака</td><td>Хофитол (1/3)</td><td>Желчегонный + гепатопротектор, назначен андрологом 29.06 под гематокрит/вязкость</td></tr>
+    <tr><td>Утро, натощак</td><td>Lacto-Fit Gold, 1 саше</td><td>—</td></tr>
+    <tr><td>Завтрак</td><td>Яйцо, творог</td><td>Обеспечивает жир для усвоения цинка/омеги</td></tr>
+    <tr><td>После завтрака</td><td>Цинк пиколинат 22 мг + Omega 3-6-9 (NOW)</td><td>Omega 3-6-9 — вспомогательная, не основной инструмент под гематокрит</td></tr>
+    <tr><td>11:30 (за час до обеда, натощак)</td><td>L-Тирозин 500 мг + Альфа-GPC 300 мг + L-Теанин/Инозитол 200 мг</td><td>Вместе, обильно запивая водой</td></tr>
+    <tr><td>~12:15–12:20, до обеда</td><td>Хофитол (2/3)</td><td>—</td></tr>
+    <tr><td>Обед 12:30</td><td>Таурин 2 капс. (1000 мг)</td><td>Перед едой/в процессе</td></tr>
+    <tr><td>День (офис)</td><td>Maxler Max Motion, 10 г / 500 мл воды</td><td>Изотоник</td></tr>
+    <tr><td>15:00</td><td>Зелёный чай</td><td>⚠ Содержит кофеин (t½ ~5-6ч) — возможная причина сниженной глубокой фазы сна</td></tr>
+    <tr><td>Перед ужином</td><td>Хофитол (3/3)</td><td>—</td></tr>
+    <tr><td>Вечер, за 30-40 мин до сна</td><td>Магний (цитрат/малат)</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="note-box" style="margin-bottom:16px;">
+  <strong>Назначено 13.07.26:</strong> ЛимфоТранзит (2 капс. утром с едой, курс под отёчность — мочегонный эффект, требует усиленной гидратации на курсе) — официально прописан врачом, ранее только обсуждался.<br>
+  Обсуждается, но не внедрено: Аргинин (3-6 г утром натощак, курс 4-8 нед — под обсуждение с кардиологом/андрологом), Цитруллин малат/Бета-аланин/HMB/Tart Cherry (под возврат к тренировкам). Акнекутан/изотретиноин микродозинг — на паузе, тема отложена минимум на 6 мес.
+</div>
+
+<!-- ===== СОСТАВ ТЕЛА ===== -->
+<div class="section-title" style="margin-top:32px;">Состав тела — май–июль 2026 (Xiaomi)</div>
+
+<div class="cards" style="margin-bottom:12px;">
+  <div class="card">
+    <div class="card-label">Вес · май → 05.07 '26</div>
+    <div class="card-value ok">69,0 → 67,25 <span style="font-size:13px">кг</span></div>
+    <div class="card-ref">−1,75 кг за 2 месяца, плато с 01.06</div>
+  </div>
+  <div class="card">
+    <div class="card-label">% жира</div>
+    <div class="card-value ok">22,0 → 20,9 <span style="font-size:13px">%</span></div>
+    <div class="card-ref">−1,1% · цель &lt;20%</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Висцеральный жир</div>
+    <div class="card-value ok">11–12 <span style="font-size:13px">ед.</span></div>
+    <div class="card-ref">Норма &lt;12, граница</div>
+  </div>
+  <div class="card">
+    <div class="card-label">BMI</div>
+    <div class="card-value ok">23,9 → 23,3</div>
+    <div class="card-ref">Норма (18,5–24,9)</div>
+  </div>
+</div>
+
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">Вес (кг)</div>
+  <div style="height:180px;position:relative;"><canvas id="weightChart"></canvas></div>
+</div>
+<div style="background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-weight:600;font-size:13px;color:#444;margin-bottom:10px;">% жира и % мышц</div>
+  <div style="height:180px;position:relative;"><canvas id="compChart"></canvas></div>
+</div>
+
+<div class="note-box" style="margin-bottom:24px;">
+  Полная история состава тела (янв 2025 – июл 2026) и детальная аналитика активности — в дашборде активности.<br>
+  ℹ Пауза в тренировках была с 11.06 по 12.07 (реабилитация после операции 12.06) — состав тела на паузе держался на плато, но мышечная масса полностью сохранилась (50,3–50,9%), потерь не зафиксировано. Колопроктолог (03.07) разрешил тренировки с ~10.07 — первая тренировка (грудь + трицепс) фактически состоялась 12.07. С тех пор плато, похоже, сломлено: вес и % жира обновили минимумы (66,25 кг и 20,2% на 14.07) — вероятно, совпадение возобновления тренировок со снижением дозы Омнадрена.
+</div>
+
+<div class="section-title" style="margin-top:20px;">УЗИ органов брюшной полости</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:8px;">
+  <thead><tr><th>Орган / показатель</th><th>18.10.22</th><th>07.06.26</th><th>Динамика</th></tr></thead>
+  <tbody>
+    <tr><td>Печень</td><td>Эхогенность ↑, стеатогепатоз</td><td>Размеры норма, структура однородная, эхогенность средняя</td><td><span class="badge badge-ok">↓↓ улучшение</span></td></tr>
+    <tr><td>Желчный пузырь</td><td>Перегиб в шейке, стенка 1,6 мм</td><td>Перегородка в шейке, стенка утолщена 3,3 мм ↑, пристеночная взвесь</td><td><span class="badge badge-high">↑ ухудшение</span></td></tr>
+    <tr><td>Поджелудочная железа</td><td>Эхогенность ↑, диффузные изменения</td><td>Эхогенность значительно ↑, диффузные изменения (размеры норма)</td><td><span class="badge badge-warn">→ стабильно/хуже</span></td></tr>
+    <tr><td>Селезёнка, аорта</td><td>Норма</td><td>Норма</td><td><span class="badge badge-ok">норма</span></td></tr>
+  </tbody>
+</table>
+</div>
+<div class="note-box" style="margin-bottom:16px;">
+  Диагноз по УЗИ 07.06.26: хронический некалькулёзный холецистит (подтверждён Скуповым А.И. 07.06.26). УЗИ в динамике — запланировать.
+</div>
+<div class="section-title" style="margin-top:20px;">Инструментальные исследования</div>
+<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+<table style="margin-bottom:12px;">
+  <thead><tr><th>Дата</th><th>Исследование</th><th>Заключение</th></tr></thead>
+  <tbody>
+    <tr><td>10.12.23</td><td>Рентген пяточных костей</td><td>Пяточные шпоры: экзостозы до 5 мм (задняя поверхность), до 4,5 мм (подошвенная)</td></tr>
+    <tr><td>21.04.26</td><td>МРТ правого плечевого сустава (1,5 Тл)</td><td>Артроз + синовит плечевого и акромиоключичного суставов. Тендинопатия надостной мышцы. Дегенеративные изменения суставной губы гленоида</td></tr>
+  </tbody>
+</table>
+</div>
+
+<script>
+const bLabels = ["05-01","05-04","05-05","05-06","05-08","05-10","05-12","05-13","05-17","05-18","05-19","05-24","05-25","05-26","05-27","05-29","05-31","06-01","06-03","06-04","06-05","06-06","06-07","06-11","06-12","06-15","06-16","06-21","06-24","06-25","06-26","06-27","06-28","06-29","07-02","07-03","07-04","07-05","07-08","07-09","07-12","07-14"];
+const bWeight = [69.0,69.1,69.3,69.2,69.5,69.8,69.7,69.5,69.6,69.0,68.8,68.8,68.0,67.2,68.2,68.2,68.3,67.8,67.35,67.85,67.85,68.0,66.8,67.35,66.65,67.7,67.5,67.65,67.3,67.6,67.35,66.9,66.75,66.75,66.85,67.7,68.1,67.25,67.6,67.2,67.2,66.5];
+const bFat    = [22.0,22.2,22.2,21.6,22.2,22.4,22.5,22.4,22.3,22.0,21.8,22.0,21.1,20.9,21.4,21.3,21.5,21.2,21.0,21.1,21.2,21.2,20.3,20.9,20.1,20.9,20.9,20.8,20.8,21.0,20.7,20.5,20.6,20.5,20.6,21.0,21.2,20.9,20.9,20.8,21.0,20.35];
+const bMuscle = [51.0,51.0,51.2,51.5,51.3,51.4,51.2,51.2,51.3,51.0,51.0,50.9,50.9,50.5,50.9,50.9,50.8,50.66,50.43,50.78,50.73,50.79,50.49,50.56,50.53,50.76,50.63,50.84,50.55,50.64,50.63,50.46,50.27,50.33,50.37,50.71,50.91,50.47,50.72,50.47,50.38,50.23];
+
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: { labels: bLabels, datasets: [{ label: 'Вес (кг)', data: bWeight, borderColor: '#534AB7', backgroundColor: '#534AB722', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true }]},
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}},grid:{display:false}}, y:{min:65,max:71,ticks:{font:{size:10},callback:v=>v+' кг'},grid:{color:'#f0f0f0'}} }}
+});
+new Chart(document.getElementById('compChart'), {
+  type: 'line',
+  data: { labels: bLabels, datasets: [
+    { label: '% жира', data: bFat, borderColor: '#D85A30', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+    { label: '% мышц', data: bMuscle, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false }
+  ]},
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},padding:8,boxWidth:12}}}, scales:{ x:{ticks:{font:{size:9}},grid:{display:false}}, y:{min:19,max:53,ticks:{font:{size:10},callback:v=>v+'%'},grid:{color:'#f0f0f0'}} }}
+});
+
+// ===== ЖИВЫЕ ГРАФИКИ АД И ПУЛЬСА ИЗ GOOGLE SHEETS (7 ДНЕЙ) =====
+(async function loadBPCharts() {
+  const SHEET_ID = '1y_YVB55h0YtJ5vXi08R4UoTaJ7z5NvpstY6ZkdwnUYI';
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+  const bpBadge = document.getElementById('bpLiveBadge');
+  const bpErrBox = document.getElementById('bpError');
+  const pulseBadge = document.getElementById('pulseLiveBadge');
+  const pulseErrBox = document.getElementById('pulseError');
+
+  function parseCsvLine(line) {
+    const re = /("([^"]|"")*"|[^,]*)(,|$)/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(line)) !== null) {
+      if (m.index === re.lastIndex && m[0] === '') break;
+      let val = m[1];
+      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1).replace(/""/g, '"');
+      out.push(val);
+      if (m[3] === '') break;
+    }
+    return out;
+  }
+
+  function normalizeRow(cells) {
+    cells = cells.map(c => c.trim());
+    if (cells.length >= 9) {
+      return {
+        date: cells[0], time: cells[1],
+        sys: parseFloat(cells[2] + '.' + cells[3]),
+        dia: parseFloat(cells[4] + '.' + cells[5]),
+        pulse: parseFloat(cells[6] + '.' + cells[7]),
+        note: cells[8] || ''
+      };
+    } else if (cells.length >= 6) {
+      return {
+        date: cells[0], time: cells[1],
+        sys: parseFloat(cells[2].replace(',', '.')),
+        dia: parseFloat(cells[3].replace(',', '.')),
+        pulse: parseFloat(cells[4].replace(',', '.')),
+        note: cells[5] || ''
+      };
+    }
+    return null;
+  }
+
+  function parseRuDate(s) {
+    const [d, m, y] = s.trim().split('.').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const dataLines = lines.slice(1);
+    let rows = dataLines.map(l => normalizeRow(parseCsvLine(l))).filter(r => r && !isNaN(r.sys));
+    rows = rows.filter(r => !/\u0442\u0435\u0441\u0442/i.test(r.note));
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    rows = rows.filter(r => parseRuDate(r.date) >= sevenDaysAgo);
+    rows.sort((a, b) => (parseRuDate(a.date) - parseRuDate(b.date)) || a.time.localeCompare(b.time));
+
+    const labels = rows.map(r => r.date.slice(0, 5) + ' ' + r.time.slice(0, 5));
+    const sysData = rows.map(r => r.sys);
+    const diaData = rows.map(r => r.dia);
+    const pulseData = rows.map(r => r.pulse);
+
+    new Chart(document.getElementById('bpChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Систолическое', data: sysData, borderColor: '#E64980', backgroundColor: '#E6498022', borderWidth: 2, pointRadius: 3, tension: 0.3 },
+          { label: 'Диастолическое', data: diaData, borderColor: '#4C6EF5', backgroundColor: '#4C6EF522', borderWidth: 2, pointRadius: 3, tension: 0.3 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } },
+        scales: {
+          x: { ticks: { font: { size: 8 }, maxRotation: 60, minRotation: 60 }, grid: { display: false } },
+          y: { min: 60, max: 140, ticks: { font: { size: 10 } }, title: { display: true, text: 'мм рт.ст.', font: { size: 10 } } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('pulseChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Пульс', data: pulseData, borderColor: '#40C057', backgroundColor: '#40C05722', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 8 }, maxRotation: 60, minRotation: 60 }, grid: { display: false } },
+          y: { min: 50, max: 110, ticks: { font: { size: 10 } }, title: { display: true, text: 'уд/мин', font: { size: 10 } } }
+        }
+      }
+    });
+
+    bpBadge.textContent = `· обновлено, ${rows.length} замеров за 7 дн.`;
+    bpBadge.style.color = '#1D9E75';
+    pulseBadge.textContent = `· обновлено, ${rows.length} замеров за 7 дн.`;
+    pulseBadge.style.color = '#1D9E75';
+  } catch (err) {
+    console.error('BP/Pulse load error:', err);
+    bpBadge.textContent = '· не удалось загрузить';
+    bpBadge.style.color = '#993C1D';
+    bpErrBox.style.display = 'block';
+    pulseBadge.textContent = '· не удалось загрузить';
+    pulseBadge.style.color = '#993C1D';
+    pulseErrBox.style.display = 'block';
+  }
+})();
+</script>
+
+</body>
+</html>
