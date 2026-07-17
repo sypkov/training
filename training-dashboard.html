@@ -61,6 +61,16 @@
   .mg-val { font-family: ui-monospace, monospace; font-size: 13px; color: var(--text-dim); }
   .mg-pct { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 700; width: 42px; text-align: right; }
 
+  .pr-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .pr-row:last-child { border-bottom: none; }
+  .pr-icon { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; }
+  .pr-name { flex: 1; font-size: 13px; }
+  .pr-name .pr-date { display: block; font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .pr-stats { text-align: right; font-family: ui-monospace, monospace; font-size: 12px; }
+  .pr-stats .pr-weight { color: var(--orange); font-weight: 700; }
+  .pr-stats .pr-rm { display: block; color: var(--teal); font-size: 11px; margin-top: 2px; }
+  .pr-new { background: var(--teal-dim); border-radius: 8px; }
+
   details.raw { margin-top: 10px; }
   details.raw summary { cursor: pointer; font-size: 12px; color: var(--teal); padding: 8px 0; }
   table.raw-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
@@ -127,6 +137,36 @@
   </div>
   <div class="card">
     <div class="chart-box" style="height:320px;"><canvas id="topExChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>🏆 Личные рекорды</h2>
+    <span class="sub">лучший вес и оценка 1ПМ по каждому упражнению</span>
+  </div>
+  <div class="card">
+    <div id="prList"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Оценка одноповторного максимума (1ПМ)</h2>
+    <span class="sub">формула Эпли: вес × (1 + повторы/30)</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:320px;"><canvas id="rmChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Недельный объём по мышечным группам</h2>
+    <span class="sub">тоннаж по неделям, стек по группам</span>
+  </div>
+  <div class="card">
+    <div class="chart-box" style="height:280px;"><canvas id="weeklyChart"></canvas></div>
   </div>
 </div>
 
@@ -360,6 +400,110 @@ function renderDashboard(rows) {
       scales: {
         x: { grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } },
         y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ===== ЛИЧНЫЕ РЕКОРДЫ И ОЦЕНКА 1ПМ =====
+  // Оценка 1ПМ по формуле Эпли: вес × (1 + повторы/30)
+  const rowsWithSets = rows.filter(r => r.weight > 0 && r.reps > 0);
+  rowsWithSets.forEach(r => { r._rm = r.weight * (1 + r.reps / 30); });
+
+  // Проходим хронологически, отслеживая рекорды по весу и по оценке 1ПМ для каждого упражнения
+  const bestWeight = new Map(); // exercise -> {weight, date}
+  const bestRM = new Map();     // exercise -> {rm, weight, reps, date}
+  const lastSessionDateStr = rowsWithSets.length ? rowsWithSets[rowsWithSets.length - 1].date : null;
+  const newPRsThisSession = new Set();
+
+  rowsWithSets.forEach(r => {
+    const curW = bestWeight.get(r.exercise);
+    if (!curW || r.weight > curW.weight) {
+      bestWeight.set(r.exercise, { weight: r.weight, date: r.date });
+      if (r.date === lastSessionDateStr) newPRsThisSession.add(r.exercise + '::w');
+    }
+    const curRM = bestRM.get(r.exercise);
+    if (!curRM || r._rm > curRM.rm) {
+      bestRM.set(r.exercise, { rm: r._rm, weight: r.weight, reps: r.reps, date: r.date });
+      if (r.date === lastSessionDateStr) newPRsThisSession.add(r.exercise + '::rm');
+    }
+  });
+
+  // ===== СПИСОК ЛИЧНЫХ РЕКОРДОВ =====
+  const prListEl = document.getElementById('prList');
+  prListEl.innerHTML = '';
+  const prExercises = Array.from(bestWeight.keys()).sort((a, b) => bestWeight.get(b).weight - bestWeight.get(a).weight);
+  prExercises.forEach(ex => {
+    const w = bestWeight.get(ex);
+    const rm = bestRM.get(ex);
+    const isNewW = newPRsThisSession.has(ex + '::w');
+    const isNewRM = newPRsThisSession.has(ex + '::rm');
+    const isNew = isNewW || isNewRM;
+    prListEl.innerHTML += `<div class="pr-row ${isNew ? 'pr-new' : ''}" ${isNew ? 'style="padding-left:8px;padding-right:8px;"' : ''}>
+      <div class="pr-icon">${isNew ? '🆕' : '🏆'}</div>
+      <div class="pr-name">${ex}<span class="pr-date">${fmtDate(parseRuDate(w.date))}${isNew ? ' · новый рекорд сегодня!' : ''}</span></div>
+      <div class="pr-stats">
+        <span class="pr-weight">${w.weight} кг</span>
+        <span class="pr-rm">1ПМ ≈ ${Math.round(rm.rm)} кг</span>
+      </div>
+    </div>`;
+  });
+
+  // ===== ГРАФИК ОЦЕНКИ 1ПМ =====
+  const rmSorted = Array.from(bestRM.entries()).sort((a, b) => b[1].rm - a[1].rm).slice(0, 10);
+  new Chart(document.getElementById('rmChart'), {
+    type: 'bar',
+    data: {
+      labels: rmSorted.map(e => e[0]),
+      datasets: [{ data: rmSorted.map(e => Math.round(e[1].rm)), backgroundColor: '#12D6B8', borderRadius: 5 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => {
+        const e = rmSorted[ctx.dataIndex][1];
+        return `1ПМ ≈ ${Math.round(e.rm)} кг (по ${e.weight}×${e.reps})`;
+      } } } },
+      scales: {
+        x: { grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ===== НЕДЕЛЬНЫЙ ОБЪЁМ ПО МЫШЕЧНЫМ ГРУППАМ =====
+  function isoWeekKey(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = (date.getUTCDay() + 6) % 7;
+    date.setUTCDate(date.getUTCDate() - dayNum + 3);
+    const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+    const weekNum = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+    return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  }
+  const weekMgMap = new Map(); // weekKey -> Map(mg -> tonnage)
+  rows.forEach(r => {
+    const wk = isoWeekKey(r._d);
+    if (!weekMgMap.has(wk)) weekMgMap.set(wk, new Map());
+    const mgm = weekMgMap.get(wk);
+    mgm.set(r.muscleGroup, (mgm.get(r.muscleGroup) || 0) + r.tonnage);
+  });
+  const weekKeys = Array.from(weekMgMap.keys()).sort();
+  const allMgForWeekly = mgLabels; // используем те же группы/цвета, что и в общей диаграмме
+  const weeklyDatasets = allMgForWeekly.map((mg, i) => ({
+    label: mg,
+    data: weekKeys.map(wk => Math.round(weekMgMap.get(wk).get(mg) || 0)),
+    backgroundColor: colorFor(mg, i),
+    stack: 'stack1',
+  }));
+
+  new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: { labels: weekKeys, datasets: weeklyDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw.toLocaleString('ru-RU') + ' кг' } } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { stacked: true, grid: { color: '#2c2c31' }, ticks: { font: { size: 10 } } }
       }
     }
   });
