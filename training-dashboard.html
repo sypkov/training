@@ -107,6 +107,8 @@
   <a href="https://docs.google.com/spreadsheets/d/1_km4eapRAIGb5g9w6CP4NibtiEOq3qN3lCujIly8f80/edit" target="_blank">Дневник тренировок</a>
 </div>
 
+<div id="plannedContainer"></div>
+
 <div class="section">
   <div class="section-head">
     <h2>Тоннаж по сессиям</h2>
@@ -300,9 +302,57 @@ function fmtDate(d) {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
 }
 
-function renderDashboard(rows) {
-  rows.forEach(r => r._d = parseRuDate(r.date));
-  rows.sort((a, b) => a._d - b._d);
+function renderPlanned(plannedRows) {
+  const container = document.getElementById('plannedContainer');
+  container.innerHTML = '';
+  if (plannedRows.length === 0) return;
+
+  const byDate = new Map();
+  plannedRows.forEach(r => {
+    if (!byDate.has(r.date)) byDate.set(r.date, []);
+    byDate.get(r.date).push(r);
+  });
+  const dates = Array.from(byDate.keys()).sort((a, b) => parseRuDate(a) - parseRuDate(b));
+
+  dates.forEach(dateStr => {
+    const items = byDate.get(dateStr);
+    const section = document.createElement('div');
+    section.className = 'section';
+    const groups = [...new Set(items.map(i => i.muscleGroup))].join(' + ');
+    section.innerHTML = `
+      <div class="section-head">
+        <h2>План тренировки на ${dateStr} <span class="badge-new">план</span></h2>
+        <span class="sub">${groups}</span>
+      </div>
+      <div class="card">
+        <div id="planCardList-${dateStr.replace(/\./g,'')}"></div>
+      </div>
+    `;
+    container.appendChild(section);
+    const listEl = section.querySelector(`#planCardList-${dateStr.replace(/\./g,'')}`);
+    items.forEach(it => {
+      const wr = (it.weight > 0 && it.reps > 0) ? `${it.weight} кг × ${it.reps}` : 'вес/повторы не заданы';
+      const row = document.createElement('div');
+      row.className = 'mg-row';
+      row.innerHTML = `<span class="mg-name">${it.exercise}</span><span class="mg-val mono">${wr}</span>`;
+      listEl.appendChild(row);
+    });
+  });
+}
+
+function renderDashboard(allRows) {
+  allRows.forEach(r => r._d = parseRuDate(r.date));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Плановые тренировки — дата в будущем (независимо от заполненности Времени)
+  const plannedRows = allRows.filter(r => r._d > today);
+  const rows = allRows.filter(r => r._d <= today).sort((a, b) => a._d - b._d);
+
+  renderPlanned(plannedRows);
+
+  if (rows.length === 0) return; // только план, ещё не было ни одной тренировки
 
   // ===== СВОДКА =====
   const sessionMap = new Map(); // dateStr -> {date, tonnage}

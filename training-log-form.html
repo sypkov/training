@@ -35,6 +35,18 @@
   .settings { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); }
   .settings summary { cursor: pointer; font-size: 12px; color: var(--text-dim); }
   .last-set { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+
+  .plan-box { margin-top: 18px; }
+  .plan-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .plan-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .plan-item:active { border-color: var(--orange); }
+  .plan-item .plan-ex { font-size: 13px; }
+  .plan-item .plan-wr { font-size: 12px; color: var(--teal); font-family: ui-monospace, monospace; white-space: nowrap; margin-left: 10px; }
+  .plan-empty { font-size: 12px; color: var(--text-dim); }
 </style>
 </head>
 <body>
@@ -44,6 +56,11 @@
 
   <label>Дата</label>
   <input type="date" id="date">
+
+  <div class="plan-box" id="planBox">
+    <div class="plan-title">План на эту дату</div>
+    <div id="planList"><div class="plan-empty">Загрузка…</div></div>
+  </div>
 
   <label>Мышечная группа</label>
   <select id="muscleGroup"></select>
@@ -111,7 +128,8 @@ mgSelect.addEventListener('change', refreshExercises);
 refreshExercises();
 
 // Дата по умолчанию — сегодня
-document.getElementById('date').value = new Date().toISOString().slice(0,10);
+const dateInput = document.getElementById('date');
+dateInput.value = new Date().toISOString().slice(0,10);
 
 // URL скрипта — из localStorage
 const urlInput = document.getElementById('scriptUrl');
@@ -120,6 +138,7 @@ urlInput.value = localStorage.getItem('training_script_url') || '';
 function saveUrl() {
   localStorage.setItem('training_script_url', urlInput.value.trim());
   showMsg('ok', 'URL сохранён');
+  loadPlanned();
 }
 
 function showMsg(type, text) {
@@ -128,6 +147,53 @@ function showMsg(type, text) {
   el.textContent = text;
   setTimeout(() => { el.className = 'msg'; }, 4000);
 }
+
+function dateToRu(dateVal) {
+  const [y,m,d] = dateVal.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+async function loadPlanned() {
+  const scriptUrl = localStorage.getItem('training_script_url');
+  const planListEl = document.getElementById('planList');
+  if (!scriptUrl) {
+    planListEl.innerHTML = '<div class="plan-empty">Сохрани URL Apps Script, чтобы видеть план</div>';
+    return;
+  }
+  const dateRu = dateToRu(dateInput.value);
+  planListEl.innerHTML = '<div class="plan-empty">Загрузка…</div>';
+  try {
+    const res = await fetch(`${scriptUrl}?action=getPlanned&date=${encodeURIComponent(dateRu)}`);
+    const json = await res.json();
+    if (json.status === 'ok' && json.planned && json.planned.length > 0) {
+      planListEl.innerHTML = '';
+      json.planned.forEach(p => {
+        const wr = (p.weight && p.reps) ? `${p.weight}×${p.reps}` : 'вес/повторы не заданы';
+        const div = document.createElement('div');
+        div.className = 'plan-item';
+        div.innerHTML = `<span class="plan-ex">${p.exercise}</span><span class="plan-wr">${wr}</span>`;
+        div.onclick = () => fillFromPlan(p);
+        planListEl.appendChild(div);
+      });
+    } else {
+      planListEl.innerHTML = '<div class="plan-empty">На эту дату плана нет</div>';
+    }
+  } catch (err) {
+    planListEl.innerHTML = '<div class="plan-empty">Не удалось загрузить план</div>';
+  }
+}
+
+function fillFromPlan(p) {
+  mgSelect.value = p.muscleGroup;
+  refreshExercises();
+  exSelect.value = p.exercise;
+  if (p.weight) document.getElementById('weight').value = p.weight;
+  if (p.reps) document.getElementById('reps').value = p.reps;
+  showMsg('ok', `Заполнено из плана: ${p.exercise}`);
+}
+
+dateInput.addEventListener('change', loadPlanned);
+loadPlanned();
 
 async function submitSet() {
   const scriptUrl = localStorage.getItem('training_script_url');
@@ -142,9 +208,7 @@ async function submitSet() {
     return;
   }
 
-  const dateVal = document.getElementById('date').value; // YYYY-MM-DD
-  const [y,m,d] = dateVal.split('-');
-  const dateFormatted = `${d}.${m}.${y}`;
+  const dateFormatted = dateToRu(document.getElementById('date').value);
 
   const payload = {
     date: dateFormatted,
@@ -165,9 +229,11 @@ async function submitSet() {
     });
     const json = await res.json();
     if (json.status === 'ok') {
-      showMsg('ok', `Записано: ${payload.exercise} — ${weight}×${reps} = ${json.tonnage} кг тоннажа`);
+      const overwriteNote = json.overwritten ? ' (заменена плановая запись)' : '';
+      showMsg('ok', `Записано: ${payload.exercise} — ${weight}×${reps} = ${json.tonnage} кг тоннажа${overwriteNote}`);
       document.getElementById('lastSet').textContent = `Последний подход: ${payload.exercise}, ${weight} кг × ${reps}`;
       document.getElementById('reps').value = '';
+      loadPlanned();
     } else {
       showMsg('err', 'Ошибка: ' + json.message);
     }
