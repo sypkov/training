@@ -98,12 +98,12 @@
 <script>
 const EXERCISES = {
   "Грудь": ["Жим на грудь в рычажном тренажёре лёжа", "Жим на грудь в рычажном тренажёре сидя", "Бабочка", "Жим в рычажном тренажере (Хаммер) сидя", "Жим на грудь на наклонной скамье в тренажёре"],
-  "Спина": ["Тяга верхнего блока", "Тяга горизонтальная рычажная по одной руке", "Тяга upper блока", "Горизонтальная тяга с упором сидя"],
-  "Плечи": ["Жим от плеч сидя в рычажном тренажёре", "Тяга штанги к подбородку", "Отведение плеча в блочном тренажёре", "Подъёмы гантелей перед собой", "Жим в блочном тренажёре на плечи", "Махи гантелей через стороны сидя", "Обратная бабочка (Rear Delt)"],
+  "Спина": ["Тяга верхнего блока", "Тяга горизонтальная рычажная по одной руке", "Тяга upper блока", "Горизонтальная тяга с упором сидя", "Тяга гантели в наклоне одной рукой (дома)"],
+  "Плечи": ["Жим от плеч сидя в рычажном тренажёре", "Тяга штанги к подбородку", "Отведение плеча в блочном тренажёре", "Подъёмы гантелей перед собой", "Жим в блочном тренажёре на плечи", "Махи гантелей через стороны сидя", "Обратная бабочка (Rear Delt)", "Жим Арнольда сидя одной рукой (дома)", "Отведение в наклоне одной рукой (дома)"],
   "Плечи/спина": ["Отведение на спину в рычажном тренажёре"],
-  "Бицепс": ["Сгибание на бицепс сидя в блочном тренажёре", "Сгибание на бицепс на скамье", "Молоток в тренажёре", "Dependent curl"],
+  "Бицепс": ["Сгибание на бицепс сидя в блочном тренажёре", "Сгибание на бицепс на скамье", "Молоток в тренажёре", "Dependent curl", "Сгибание на бицепс с гантелью (дома)"],
   "Трицепс": ["Трицепс в тренажёре сидя", "Разгибание рук на верхнем блоке", "Жим на трицепс в рычажном тренажере (сидя)", "Разгибание руки с гантелью из-за головы"],
-  "Ноги": ["Разгибание голени сидя в блочном тренажёре", "Жим ногами с фокусом на ягодицы", "Сгибание коленей в блочном тренажёре"],
+  "Ноги": ["Разгибание голени сидя в блочном тренажёре", "Жим ногами с фокусом на ягодицы", "Сгибание коленей в блочном тренажёре", "Гоблет-присед (дома)", "Подъёмы на носки с гантелью (дома)", "Выпады с гантелью (дома)"],
 };
 
 const mgSelect = document.getElementById('muscleGroup');
@@ -168,7 +168,11 @@ async function loadPlanned() {
     if (json.status === 'ok' && json.planned && json.planned.length > 0) {
       planListEl.innerHTML = '';
       json.planned.forEach(p => {
-        const wr = (p.weight && p.reps) ? `${p.weight}×${p.reps}` : 'вес/повторы не заданы';
+        let wr;
+        if (p.weight && p.reps) wr = `${p.weight}×${p.reps}`;
+        else if (p.weight) wr = `${p.weight} кг · повторы не заданы`;
+        else if (p.reps) wr = `вес не задан · ${p.reps} повт.`;
+        else wr = 'вес/повторы не заданы';
         const div = document.createElement('div');
         div.className = 'plan-item';
         div.innerHTML = `<span class="plan-ex">${p.exercise}</span><span class="plan-wr">${wr}</span>`;
@@ -184,12 +188,30 @@ async function loadPlanned() {
 }
 
 function fillFromPlan(p) {
-  mgSelect.value = p.muscleGroup;
+  const wantedGroup = (p.muscleGroup || '').trim();
+  const wantedExercise = (p.exercise || '').trim();
+
+  // Ищем ключ группы без учёта регистра/пробелов, чтобы select.value точно сработал
+  const groupKey = Object.keys(EXERCISES).find(
+    k => k.trim().toLowerCase() === wantedGroup.toLowerCase()
+  ) || wantedGroup;
+
+  mgSelect.value = groupKey;
   refreshExercises();
-  exSelect.value = p.exercise;
+
+  // Если упражнения нет в списке для этой группы — добавляем временный вариант,
+  // чтобы оно всё равно отобразилось и было отправлено как есть
+  const exerciseExists = Array.from(exSelect.options).some(o => o.value === wantedExercise);
+  if (!exerciseExists && wantedExercise) {
+    const opt = document.createElement('option');
+    opt.value = wantedExercise; opt.textContent = wantedExercise + ' (из плана)';
+    exSelect.appendChild(opt);
+  }
+  exSelect.value = wantedExercise;
+
   if (p.weight) document.getElementById('weight').value = p.weight;
   if (p.reps) document.getElementById('reps').value = p.reps;
-  showMsg('ok', `Заполнено из плана: ${p.exercise}`);
+  showMsg('ok', `Заполнено из плана: ${wantedExercise}`);
 }
 
 dateInput.addEventListener('change', loadPlanned);

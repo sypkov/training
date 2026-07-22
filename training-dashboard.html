@@ -331,7 +331,11 @@ function renderPlanned(plannedRows) {
     container.appendChild(section);
     const listEl = section.querySelector(`#planCardList-${dateStr.replace(/\./g,'')}`);
     items.forEach(it => {
-      const wr = (it.weight > 0 && it.reps > 0) ? `${it.weight} кг × ${it.reps}` : 'вес/повторы не заданы';
+      let wr;
+      if (it.weight > 0 && it.reps > 0) wr = `${it.weight} кг × ${it.reps}`;
+      else if (it.weight > 0) wr = `${it.weight} кг · повторы не заданы`;
+      else if (it.reps > 0) wr = `вес не задан · ${it.reps} повт.`;
+      else wr = 'вес/повторы не заданы';
       const row = document.createElement('div');
       row.className = 'mg-row';
       row.innerHTML = `<span class="mg-name">${it.exercise}</span><span class="mg-val mono">${wr}</span>`;
