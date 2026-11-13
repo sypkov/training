@@ -160,6 +160,21 @@
   table.raw-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
   .of { overflow-x: auto; max-height: 420px; overflow-y: auto; }
 
+  /* Heatmaps */
+  .hm-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .hm-grid { display: grid; gap: 3px; width: max-content; }
+  .hm-cell { width: 14px; height: 14px; border-radius: 3px; background: #24242a; cursor: pointer; }
+  .hm-cell.out { background: transparent; cursor: default; }
+  .hm-cell.sel { outline: 2px solid var(--text); outline-offset: 1px; }
+  .hm-lbl { font-size: 10px; color: var(--text-dim); white-space: nowrap; line-height: 14px; }
+  .hm-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-dim); margin-top: 10px; flex-wrap: wrap; }
+  .hm-legend .hm-cell { cursor: default; }
+  .hm-info { font-size: 12px; min-height: 18px; margin-top: 8px; color: var(--text); font-family: ui-monospace, monospace; }
+  .hm2-cell { height: 22px; border-radius: 4px; background: #24242a; cursor: pointer; font-size: 10px; font-family: ui-monospace, monospace; display: flex; align-items: center; justify-content: center; color: #131316; font-weight: 700; }
+  .hm2-cell.sel { outline: 2px solid var(--text); outline-offset: 1px; }
+  .hm2-row { font-size: 11px; color: var(--text); white-space: nowrap; line-height: 22px; padding-right: 6px; }
+  .hm-modes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
   .foot { text-align: center; color: var(--text-dim); font-size: 11px; padding: 30px 0 10px; }
   .badge-new { display:inline-block; background: var(--teal-dim); color: var(--teal); font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; margin-left:8px; }
   .badge-plan { display:inline-block; background: var(--orange-dim); color: var(--orange); font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; margin-left:8px; }
@@ -257,6 +272,18 @@
 
 <div class="section">
   <div class="section-head">
+    <h2>Календарь тренировок</h2>
+    <span class="sub">цвет = тоннаж сессии · нажмите на день</span>
+  </div>
+  <div class="card">
+    <div class="hm-scroll"><div id="calHeatmap" class="hm-grid"></div></div>
+    <div id="calLegend" class="hm-legend"></div>
+    <div id="calInfo" class="hm-info"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
     <h2>Распределение по мышечным группам</h2>
     <span class="sub" id="mgSub">суммарный тоннаж</span>
   </div>
@@ -299,6 +326,27 @@
       </table>
     </div>
     <div id="setsNote" style="font-size:11px;color:var(--text-dim);margin-top:10px;line-height:1.5;"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Мышечные группы во времени</h2>
+    <span class="sub" id="hm2Sub">—</span>
+  </div>
+  <div class="card">
+    <div class="hm-modes" id="hm2Modes">
+      <button class="filter-btn" data-hm2="direct">Подходы</button>
+      <button class="filter-btn" data-hm2="total">+ косвенные</button>
+      <button class="filter-btn" data-hm2="ton">Тоннаж (шкала по группе)</button>
+    </div>
+    <div class="hm-modes" id="hm2Gran">
+      <button class="filter-btn" data-gran="week">Недели</button>
+      <button class="filter-btn" data-gran="month">Месяцы</button>
+    </div>
+    <div class="hm-scroll"><div id="hm2" class="hm-grid"></div></div>
+    <div id="hm2Legend" class="hm-legend"></div>
+    <div id="hm2Info" class="hm-info"></div>
   </div>
 </div>
 
@@ -726,6 +774,7 @@ function renderDashboard(rows) {
     document.querySelector('#setsTable tbody').innerHTML = '';
     document.getElementById('setsNote').innerHTML = '';
     window._balance = null; renderRadar();
+    window._hm = null; renderCalendar(); renderHm2();
     document.getElementById('mgList').innerHTML = '<div class="empty-state">Нет данных за выбранный период</div>';
     document.getElementById('prList').innerHTML = '<div class="empty-state">Нет данных за выбранный период</div>';
     document.getElementById('lastSessionMeta').innerHTML = '';
@@ -955,6 +1004,11 @@ function renderDashboard(rows) {
   };
   renderRadar();
 
+  // ===== HEATMAPS =====
+  window._hm = { rows, sessions, groups: setStats.map(s => s.mg) };
+  renderCalendar();
+  renderHm2();
+
   // ===== TOP EXERCISES =====
   const exMap = new Map();
   rows.forEach(r => exMap.set(r.exercise, (exMap.get(r.exercise) || 0) + r.tonnage));
@@ -1081,10 +1135,20 @@ function renderDashboard(rows) {
     };
   }).filter(ds => ds.data.some(v => v != null));
 
+  // Ось X начинается с первой даты, где у любого из упражнений есть оценка 1ПМ
+  let rmStart = allDates.length;
+  rmTrendDatasets.forEach(ds => {
+    const i = ds.data.findIndex(v => v != null);
+    if (i >= 0 && i < rmStart) rmStart = i;
+  });
+  if (rmStart >= allDates.length) rmStart = 0;
+  rmTrendDatasets.forEach(ds => { ds.data = ds.data.slice(rmStart); });
+  const rmTrendDates = allDates.slice(rmStart);
+
   destroyChart('rmTrendChart');
   charts.rmTrendChart = new Chart(document.getElementById('rmTrendChart'), {
     type: 'line',
-    data: { labels: allDates.map(d => fmtDate(parseRuDate(d))), datasets: rmTrendDatasets },
+    data: { labels: rmTrendDates.map(d => fmtDate(parseRuDate(d))), datasets: rmTrendDatasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 10 } } },
@@ -1342,6 +1406,211 @@ document.querySelectorAll('#radarModes .filter-btn').forEach(btn => {
     renderRadar();
   });
 });
+
+// ========== HEATMAPS ==========
+const HM_EMPTY = '#24242a';
+const HM_TEAL = ['rgba(18,214,184,0.22)', 'rgba(18,214,184,0.42)', 'rgba(18,214,184,0.64)', 'rgba(18,214,184,0.86)', '#12D6B8'];
+const RU_MON = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const RU_DOW = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DAY_MS = 86400000;
+function mondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
+function dayKey(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function fmtKg(v) { return Math.round(v).toLocaleString('ru-RU') + ' кг'; }
+function fmt1(v) { return (Math.round(v * 10) / 10).toLocaleString('ru-RU'); }
+function legendCells(colors, labels) {
+  return colors.map((c, i) => `<span class="hm-cell" style="background:${c}"></span><span style="margin-right:6px">${labels[i] || ''}</span>`).join('');
+}
+function bindHmClicks(container, infoEl, cellSel) {
+  container.querySelectorAll(cellSel).forEach(el => {
+    if (!el.dataset.info) return;
+    el.addEventListener('click', () => {
+      container.querySelectorAll('.sel').forEach(s => s.classList.remove('sel'));
+      el.classList.add('sel');
+      infoEl.textContent = el.dataset.info;
+    });
+  });
+}
+
+// --- 1. Календарь: день недели × неделя, цвет = тоннаж сессии ---
+function renderCalendar() {
+  const grid = document.getElementById('calHeatmap');
+  const legend = document.getElementById('calLegend');
+  const info = document.getElementById('calInfo');
+  grid.innerHTML = ''; legend.innerHTML = ''; info.textContent = '';
+  const h = window._hm;
+  if (!h || !h.sessions.length) return;
+
+  const byDay = new Map();
+  h.rows.forEach(r => {
+    if (!byDay.has(r.date)) byDay.set(r.date, { t: 0, s: 0, g: new Set() });
+    const o = byDay.get(r.date); o.t += r.tonnage; o.s += r.sets; o.g.add(r.muscleGroup);
+  });
+  const maxT = Math.max(...[...byDay.values()].map(o => o.t)) || 1;
+  const level = t => t <= 0 ? -1 : Math.min(4, Math.floor(t / maxT * 5 - 1e-9));
+
+  const start = mondayOf(h.sessions[0]._d);
+  const end = mondayOf(h.sessions[h.sessions.length - 1]._d);
+  const nWeeks = Math.round((end - start) / (7 * DAY_MS)) + 1;
+  const first = h.sessions[0]._d, last = h.sessions[h.sessions.length - 1]._d;
+
+  grid.style.gridTemplateColumns = `22px repeat(${nWeeks}, 14px)`;
+  grid.style.gridTemplateRows = `14px repeat(7, 14px)`;
+  let html = '';
+  // Подписи месяцев
+  let prevMonth = -1;
+  for (let w = 0; w < nWeeks; w++) {
+    const wd = addDays(start, w * 7);
+    const m = addDays(wd, 6).getMonth();
+    if (m !== prevMonth) {
+      html += `<div class="hm-lbl" style="grid-row:1;grid-column:${w + 2} / span 3">${RU_MON[m]}</div>`;
+      prevMonth = m;
+    }
+  }
+  // Подписи дней
+  [0, 2, 4, 6].forEach(i => { html += `<div class="hm-lbl" style="grid-row:${i + 2};grid-column:1">${RU_DOW[i]}</div>`; });
+  // Ячейки
+  for (let w = 0; w < nWeeks; w++) {
+    for (let d = 0; d < 7; d++) {
+      const day = addDays(start, w * 7 + d);
+      const pos = `grid-row:${d + 2};grid-column:${w + 2}`;
+      if (day < first || day > last) { html += `<div class="hm-cell out" style="${pos}"></div>`; continue; }
+      const o = byDay.get(dayKey(day));
+      const lv = o ? level(o.t) : -1;
+      const bg = lv < 0 ? HM_EMPTY : HM_TEAL[lv];
+      const inf = o
+        ? `${RU_DOW[d]} ${fmtDateFull(day)} · ${fmtKg(o.t)} · ${o.s} подх. · ${[...o.g].join(' + ')}`
+        : `${RU_DOW[d]} ${fmtDateFull(day)} · отдых`;
+      html += `<div class="hm-cell" style="${pos};background:${bg}" data-info="${inf}"></div>`;
+    }
+  }
+  grid.innerHTML = html;
+  bindHmClicks(grid, info, '.hm-cell');
+
+  const step = maxT / 5;
+  legend.innerHTML = `<span style="margin-right:4px">Тоннаж:</span>` +
+    legendCells([HM_EMPTY, ...HM_TEAL], ['0', ...HM_TEAL.map((_, i) => `≤${Math.round(step * (i + 1) / 100) / 10}т`)]);
+  info.textContent = `Тренировок: ${byDay.size} из ${Math.round((last - first) / DAY_MS) + 1} дн. · максимум ${fmtKg(maxT)}`;
+}
+
+// --- 2. Мышечная группа × неделя/месяц ---
+let hm2Mode = localStorage.getItem('td_hm2') || 'direct';
+let hm2Gran = localStorage.getItem('td_hm2g') || 'week';
+// Шкала подходов/нед: границы корзин
+const SET_BINS = [5, 10, 15, 20];
+const SET_COLORS = ['rgba(18,214,184,0.22)', 'rgba(18,214,184,0.45)', 'rgba(18,214,184,0.72)', '#12D6B8', '#F2C230'];
+const SET_LABELS = ['<5', '5–9', '10–14', '15–20', '>20'];
+
+function renderHm2() {
+  document.querySelectorAll('#hm2Modes .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.hm2 === hm2Mode));
+  document.querySelectorAll('#hm2Gran .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.gran === hm2Gran));
+  const grid = document.getElementById('hm2');
+  const legend = document.getElementById('hm2Legend');
+  const info = document.getElementById('hm2Info');
+  grid.innerHTML = ''; legend.innerHTML = ''; info.textContent = '';
+  const h = window._hm;
+  if (!h || !h.sessions.length) return;
+
+  const first = h.sessions[0]._d, last = h.sessions[h.sessions.length - 1]._d;
+  // Столбцы
+  const cols = [];
+  if (hm2Gran === 'week') {
+    const start = mondayOf(first), end = mondayOf(last);
+    for (let w = start; w <= end; w = addDays(w, 7)) {
+      const from = w < first ? first : w;
+      const toRaw = addDays(w, 6);
+      const to = toRaw > last ? last : toRaw;
+      cols.push({ key: dayKey(w), from: w, to: toRaw, days: 7, lblD: from,
+        label: `${String(w.getDate()).padStart(2,'0')}.${String(w.getMonth()+1).padStart(2,'0')}`,
+        title: `нед. ${fmtDate(w)}–${fmtDate(toRaw)}` });
+    }
+  } else {
+    let m = new Date(first.getFullYear(), first.getMonth(), 1);
+    while (m <= last) {
+      const mEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+      const from = m < first ? first : m;
+      const to = mEnd > last ? last : mEnd;
+      cols.push({ key: `${m.getFullYear()}-${m.getMonth()}`, from: m, to: mEnd, lblD: m,
+        days: Math.round((to - from) / DAY_MS) + 1,
+        label: RU_MON[m.getMonth()], title: `${RU_MON[m.getMonth()]} ${m.getFullYear()}` + (to < mEnd || from > m ? ` (${fmtDate(from)}–${fmtDate(to)})` : '') });
+      m = new Date(m.getFullYear(), m.getMonth() + 1, 1);
+    }
+  }
+  const colOf = d => cols.findIndex(c => d >= c.from && d <= addDays(c.to, 0));
+
+  // Агрегаты: группа → массив по столбцам
+  const groups = h.groups;
+  const mk = () => new Map(groups.map(g => [g, cols.map(() => 0)]));
+  const direct = mk(), indirect = mk(), ton = mk();
+  h.rows.forEach(r => {
+    const ci = colOf(r._d); if (ci < 0) return;
+    if (direct.has(r.muscleGroup)) {
+      direct.get(r.muscleGroup)[ci] += r.sets;
+      ton.get(r.muscleGroup)[ci] += r.tonnage;
+    }
+    INDIRECT_RULES.forEach(rule => {
+      if (r.muscleGroup === rule.from && rule.test(r.exercise) && indirect.has(rule.to)) {
+        indirect.get(rule.to)[ci] += r.sets * INDIRECT_COEF;
+      }
+    });
+  });
+
+  // Значение ячейки
+  const perWeek = (v, c) => v / (c.days / 7);
+  const cellVal = (g, ci) => {
+    const c = cols[ci];
+    if (hm2Mode === 'ton') return ton.get(g)[ci];
+    const s = direct.get(g)[ci] + (hm2Mode === 'total' ? indirect.get(g)[ci] : 0);
+    return perWeek(s, c);
+  };
+  const rowMax = new Map(groups.map(g => [g, Math.max(...cols.map((_, ci) => ton.get(g)[ci])) || 1]));
+  const colorOf = (g, v) => {
+    if (v <= 0) return HM_EMPTY;
+    if (hm2Mode === 'ton') return HM_TEAL[Math.min(4, Math.floor(v / rowMax.get(g) * 5 - 1e-9))];
+    const i = SET_BINS.findIndex(b => v < b);
+    return SET_COLORS[i < 0 ? 4 : i];
+  };
+
+  const cw = hm2Gran === 'week' ? 22 : 44;
+  grid.style.gridTemplateColumns = `max-content repeat(${cols.length}, ${cw}px)`;
+  let html = '<div></div>';
+  cols.forEach((c, i) => {
+    const show = hm2Gran === 'month' || i === 0 || c.lblD.getMonth() !== cols[i - 1].lblD.getMonth();
+    html += `<div class="hm-lbl" style="text-align:left;overflow:visible">${show ? (hm2Gran === 'week' ? RU_MON[c.lblD.getMonth()] : c.label) : ''}</div>`;
+  });
+  groups.forEach(g => {
+    html += `<div class="hm2-row"><span class="mg-dot" style="display:inline-block;margin-right:5px;vertical-align:middle;background:${colorFor(g, 0)}"></span>${g}</div>`;
+    cols.forEach((c, ci) => {
+      const v = cellVal(g, ci);
+      const showNum = hm2Gran === 'month' && v > 0;
+      const txt = showNum ? (hm2Mode === 'ton' ? Math.round(v / 100) / 10 : fmt1(v)) : '';
+      const d = direct.get(g)[ci], ind = indirect.get(g)[ci], t = ton.get(g)[ci];
+      const inf = `${g} · ${c.title} · прямые ${fmt1(d)}` + (ind ? ` + косв. ${fmt1(ind)}` : '') +
+        ` подх. (${fmt1(perWeek(d + (hm2Mode === 'total' ? ind : 0), c))}/нед) · ${fmtKg(t)}`;
+      const bg = colorOf(g, v);
+      const light = bg === HM_EMPTY || bg === HM_TEAL[0] || bg === HM_TEAL[1] || bg === SET_COLORS[0] || bg === SET_COLORS[1];
+      html += `<div class="hm2-cell" style="background:${bg};color:${light ? 'var(--text)' : '#131316'}" data-info="${inf}">${txt}</div>`;
+    });
+  });
+  grid.innerHTML = html;
+  bindHmClicks(grid, info, '.hm2-cell');
+
+  if (hm2Mode === 'ton') {
+    document.getElementById('hm2Sub').textContent = 'тоннаж; шкала своя у каждой группы (доля от её максимума)' + (hm2Gran === 'month' ? ' · числа в тоннах' : '');
+    legend.innerHTML = 'Доля от максимума группы: ' + legendCells([HM_EMPTY, ...HM_TEAL], ['0', '≤20%', '≤40%', '≤60%', '≤80%', '≤100%']);
+  } else {
+    document.getElementById('hm2Sub').textContent = (hm2Mode === 'total' ? 'подходы/нед с косвенными (×0,5)' : 'рабочие подходы/нед') + (hm2Gran === 'month' ? ' · среднее за месяц' : '');
+    legend.innerHTML = 'Подходов/нед: ' + legendCells([HM_EMPTY, ...SET_COLORS], ['0', ...SET_LABELS]);
+  }
+  info.textContent = 'Нажмите на ячейку';
+}
+
+document.querySelectorAll('#hm2Modes .filter-btn').forEach(b => b.addEventListener('click', () => {
+  hm2Mode = b.dataset.hm2; localStorage.setItem('td_hm2', hm2Mode); renderHm2();
+}));
+document.querySelectorAll('#hm2Gran .filter-btn').forEach(b => b.addEventListener('click', () => {
+  hm2Gran = b.dataset.gran; localStorage.setItem('td_hm2g', hm2Gran); renderHm2();
+}));
 
 function renderRawTable() {
   const search = (document.getElementById('rawSearch').value || '').toLowerCase();
