@@ -192,6 +192,10 @@ async function checkConnection() {
   btn.disabled = true;
   status.textContent = 'Проверяю подключение…';
   try {
+    const health = await fetch(activeScriptUrl);
+    if (!health.ok) throw new Error('HTTP ' + health.status);
+    const server = await health.json();
+    if (server.status !== 'ok' || server.version !== '2026-11-23') throw new Error('Обнови адрес подключения: сервер использует старую версию');
     const res = await fetch(activeScriptUrl, {
       method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
       body: JSON.stringify({dryRun: true, date: dateToRu(dateInput.value),
