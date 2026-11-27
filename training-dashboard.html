@@ -1416,6 +1416,17 @@ const DAY_MS = 86400000;
 function mondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
 function dayKey(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function heatmapEndDate(last) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedEnd = currentPeriod === 'custom' && customTo ? new Date(customTo + 'T00:00:00') : today;
+  const end = selectedEnd < today ? selectedEnd : today;
+  return end > last ? end : last;
+}
+function scrollHeatmapToLatest(grid) {
+  const scroller = grid.closest('.hm-scroll');
+  if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+}
 function fmtKg(v) { return Math.round(v).toLocaleString('ru-RU') + ' кг'; }
 function fmt1(v) { return (Math.round(v * 10) / 10).toLocaleString('ru-RU'); }
 function legendCells(colors, labels) {
@@ -1450,9 +1461,9 @@ function renderCalendar() {
   const level = t => t <= 0 ? -1 : Math.min(4, Math.floor(t / maxT * 5 - 1e-9));
 
   const start = mondayOf(h.sessions[0]._d);
-  const end = mondayOf(h.sessions[h.sessions.length - 1]._d);
+  const end = mondayOf(heatmapEndDate(h.sessions[h.sessions.length - 1]._d));
   const nWeeks = Math.round((end - start) / (7 * DAY_MS)) + 1;
-  const first = h.sessions[0]._d, last = h.sessions[h.sessions.length - 1]._d;
+  const first = h.sessions[0]._d, last = heatmapEndDate(h.sessions[h.sessions.length - 1]._d);
 
   grid.style.gridTemplateColumns = `22px repeat(${nWeeks}, 14px)`;
   grid.style.gridTemplateRows = `14px repeat(7, 14px)`;
@@ -1486,6 +1497,7 @@ function renderCalendar() {
   }
   grid.innerHTML = html;
   bindHmClicks(grid, info, '.hm-cell');
+  scrollHeatmapToLatest(grid);
 
   const step = maxT / 5;
   legend.innerHTML = `<span style="margin-right:4px">Тоннаж:</span>` +
@@ -1511,7 +1523,7 @@ function renderHm2() {
   const h = window._hm;
   if (!h || !h.sessions.length) return;
 
-  const first = h.sessions[0]._d, last = h.sessions[h.sessions.length - 1]._d;
+  const first = h.sessions[0]._d, last = heatmapEndDate(h.sessions[h.sessions.length - 1]._d);
   // Столбцы
   const cols = [];
   if (hm2Gran === 'week') {
@@ -1594,6 +1606,7 @@ function renderHm2() {
   });
   grid.innerHTML = html;
   bindHmClicks(grid, info, '.hm2-cell');
+  scrollHeatmapToLatest(grid);
 
   if (hm2Mode === 'ton') {
     document.getElementById('hm2Sub').textContent = 'тоннаж; шкала своя у каждой группы (доля от её максимума)' + (hm2Gran === 'month' ? ' · числа в тоннах' : '');
@@ -1638,11 +1651,11 @@ function renderRawTable() {
 // ========== EVENTS ==========
 document.getElementById('btnRefresh').addEventListener('click', loadTrainingData);
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
+document.querySelectorAll('.filter-btn[data-period]').forEach(btn => {
   btn.addEventListener('click', () => {
     currentPeriod = btn.dataset.period;
     localStorage.setItem('td_period', currentPeriod);
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn[data-period]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const customEl = document.getElementById('customDates');
     if (currentPeriod === 'custom') {
